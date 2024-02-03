@@ -10,6 +10,12 @@ LDFLAGS =
 QEMUPREFIX =
 QEMU = $(QEMUPREFIX)qemu-system-x86_64
 
+NAME = kernel
+elf = $(NAME).elf
+img = $(NAME).img
+iso = $(NAME).iso
+map = $(NAME).map
+
 ifndef NCPU
 NCPU = 1
 endif
@@ -31,26 +37,26 @@ OBJS = $(C)entry.o $(C)main.o
 
 bootblock: boot/boot.o
 
-kernel.elf: $(OBJS) link.ld
+$(elf): $(OBJS) link.ld
 	@echo LD $@
-	@$(LD) -n $(LDFLAGS) -T link.ld -o $@ $(OBJS)
+	@$(LD) -n $(LDFLAGS) -Map $(map) -T link.ld -o $@ $(OBJS)
 
-kernel.img: bootblock kernel.elf
+$(img): bootblock $(elf)
 
-kernel.iso: kernel.elf boot/grub.cfg
+$(iso): $(elf) boot/grub.cfg
 	@mkdir -p iso/boot/grub
 	@cp boot/grub.cfg iso/boot/grub
-	@cp kernel.elf iso/boot/
+	@cp $(elf) iso/boot/
 	@grub-mkrescue -o $@ iso/
 
 clean:
-	$(RM) $(OBJS) kernel.elf kernel.iso boot/boot.o
+	$(RM) $(OBJS) $(elf) $(iso) $(img) boot/boot.o
 	$(RM) -rf iso/
 
-qemu-img: kernel.img
-	$(QEMU) -nographic -drive file=kernel.img,index=0,media=disk,format=raw -smp $(NCPU) -m $(MEMSZ)
+qemu-img: $(img)
+	$(QEMU) -nographic -drive file=$(img),index=0,media=disk,format=raw -smp $(NCPU) -m $(MEMSZ)
 
-qemu-iso: kernel.iso
-	$(QEMU) -nographic -drive file=kernel.iso,format=raw -smp $(NCPU) -m $(MEMSZ)
+qemu-iso: $(iso)
+	$(QEMU) -nographic -drive file=$(iso),format=raw -smp $(NCPU) -m $(MEMSZ)
 
 .PHONY: clean qemu

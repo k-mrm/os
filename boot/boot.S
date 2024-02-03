@@ -35,7 +35,7 @@ _start:
 
 entry16:
 	cli
-	xorw	$ax, $ax 
+	xor	%ax, %ax 
 
 	jmp	.
 

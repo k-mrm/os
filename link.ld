@@ -3,7 +3,7 @@ ENTRY(entry32)
 
 SECTIONS {
 	. = 1M;
-	vmm_start = .;
+	kern_start = .;
 
 	.text : {
 		KEEP(*(.text.head))
@@ -30,7 +30,7 @@ SECTIONS {
 	}
 	
 	. = ALIGN(4096);
-	vmm_end = .;
+	kern_end = .;
 
 	/DISCARD/ : {
 		*(.comment .comment.*)
