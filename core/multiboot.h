@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, akarilab.net
+ * Copyright (c) 2024, akarilab.net
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,13 +30,35 @@
 #ifndef _MULTIBOOT_H
 #define _MULTIBOOT_H
 
-#include <akari/types.h>
+#include <akari/asm.h>
+#include <akari/compiler.h>
 
-struct multiboot {
-	u32 magic;
-	u32 flags;
-	u32 length;
-	u32 checksum;
-};
+// MultiBoot2
+
+typedef struct MULTIBOOTINFO	MULTIBOOTINFO;
+
+struct MULTIBOOTINFO {
+	u32 	Flags;			// offset 0
+	u32	MemLower;		// offset 4
+	u32	MemUpper;		// offset 8
+	u32	BootDevice;		// offset 12
+	u32	Cmdline;		// offset 16
+	u32	ModsCount;		// offset 20
+	u32	ModsAddr;		// offset 24
+	u32	Syms[4];		// offset 28-40
+	u32	MmapLen;		// offset 44
+	u32	MmapAddr;		// offset 48
+	u32	DrivesLen;		// offset 52
+	u32	DrivesAddr;		// offset 56
+	u32	ConfigTable;		// offset 60
+	u32	BootLoaderName;		// offset 64
+	u32	ApmTable;		// offset 68
+	u32	VbeControlInfo;		// offset 72
+	u32	VbeModeInfo;		// offset 76
+	u16	VbeMode;		// offset 80
+	u16	VbeInterfaceSeg;	// offset 82
+	u16	VbeInterfaceOff;	// offset 84
+	u16	VbeInterfaceLen;	// offset 86
+} __packed;
 
 #endif	// _MULTIBOOT_H

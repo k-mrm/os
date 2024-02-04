@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, akarilab.net
+ * Copyright (c) 2024, akarilab.net
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -60,14 +60,7 @@ entry32:
 
 	movl	$0x2f4b2f4f, (0xb8000)
 
-	// clear .bss
-	cld
-	xorl	%eax, %eax
-	movl	$pa(__bss_start), %edi
-	movl	$pa(__bss_end), %ecx
-	subl	%edi, %ecx
-	shrl	$2, %ecx
-	rep	stosl
+	// save multiboot information
 	// enable PAE
 	movl	%cr4, %eax
 	orl	$CR4_PAE, %eax
@@ -86,16 +79,29 @@ entry32:
 	orl	$(CR0_PE | CR0_PG), %eax
 	mov	%eax, %cr0
 
-	movl	entry64, %eax
-	ljmp	*%eax
+	//movl	entry64, %eax
+	//ljmpl	*%eax
+
+	hlt
+
+multiboot_info:
+	.quad	0
 
 .code64
 .global entry64
 entry64:
+	// zero .bss
+	cld
+	xorl	%eax, %eax
+	movl	$pa(__bss_start), %edi
+	movl	$pa(__bss_end), %ecx
+	subl	%edi, %ecx
+	shrl	$2, %ecx
+	rep	stosl
+
 	call	kmain0
 
 	// never return here!
+	cli
+	hlt
 	jmp	.
-
-zerobss:
-	ret

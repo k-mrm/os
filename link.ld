@@ -1,8 +1,12 @@
 OUTPUT_ARCH(i386:x86-64)
-ENTRY(entry32)
+ENTRY(phys_entry32)
 
-virt = 0xffffff8000100000;
+virt = 0xffffffff80100000;
 phys = 0x100000;
+offset = virt - phys;
+
+phys_entry32 = entry32 - offset;
+
 SECTIONS {
 	. = virt;
 	kstart = .;
@@ -33,6 +37,7 @@ SECTIONS {
 	.bss : AT(ADDR(.rodata) - offset) {
 		__bss_start = .;
 		*(.bss .bss.*)
+		*(COMMON)
 		__bss_end = .;
 	}
 	

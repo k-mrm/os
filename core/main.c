@@ -29,12 +29,12 @@
 
 #include <akari/types.h>
 #include <akari/asm.h>
-#include <akari/multiboot.h>
 #include <akari/compiler.h>
+#include "multiboot.h"
 
 // bsp main
 void __noreturn
-kmain0(void)
+kmain0(MULTIBOOTINFO *bootinfo)
 {
 	volatile u16 *vga = 0xb8000;
 	char *msg = "64Bit Hello!";

@@ -32,7 +32,7 @@
 
 #include <akari/asm.h>
 
-#define VA_OFFSET	ULL(0xffffff8000000000)
+#define VA_OFFSET	ULL(0xffffffff80100000)
 
 #ifndef __ASSEMBLER__
 
