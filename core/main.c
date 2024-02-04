@@ -27,19 +27,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <akarivmm/types.h>
-#include <akarivmm/asm.h>
-#include <akarivmm/multiboot.h>
-#include <akarivmm/compiler.h>
+#include <akari/types.h>
+#include <akari/asm.h>
+#include <akari/multiboot.h>
+#include <akari/compiler.h>
 
+// bsp main
 void __noreturn
-vmm_main_bsp(void) {
+kmain0(void)
+{
+	volatile u16 *vga = 0xb8000;
+	char *msg = "64Bit Hello!";
+	char c;
+	int off = 0;
+
+	while ((c = msg[off])) {
+		*(vga + off) = 0x0700 | c;
+		off++;
+	}
+
 	for(;;)
 		hlt();
 }
 
+// ap main
 void __noreturn
-vmm_main_ap(void) {
+kmainap(void)
+{
 	for(;;)
 		hlt();
 }

@@ -1,40 +1,45 @@
 OUTPUT_ARCH(i386:x86-64)
 ENTRY(entry32)
 
+virt = 0xffffff8000100000;
+phys = 0x100000;
 SECTIONS {
-	. = 1M;
-	kern_start = .;
+	. = virt;
+	kstart = .;
 
-	.text : {
+	.text : AT(ADDR(.text) - offset) {
 		KEEP(*(.text.head))
 		KEEP(*(.text.boot))
 		*(.text)
+		. = ALIGN(4096);
+		__kinit = .;
+		*(.text.init)
+		. = ALIGN(4096);
+		__kinit_end = .;
 		*(.text.*)
 	}
 	
 	. = ALIGN(4096);
-	.data : {
+	.data : AT(ADDR(.data) - offset) {
 		*(.data .data.*)
 	}
 
 	. = ALIGN(4096);
-	.rodata : {
+	.rodata : AT(ADDR(.rodata) - offset) {
 		*(.rodata .rodata.*)
 	}
 
-	. = ALIGN(16);
-	.bss : {
+	. = ALIGN(4096);
+	.bss : AT(ADDR(.rodata) - offset) {
 		__bss_start = .;
 		*(.bss .bss.*)
 		__bss_end = .;
 	}
 	
 	. = ALIGN(4096);
-	kern_end = .;
+	kend = .;
 
 	/DISCARD/ : {
 		*(.comment .comment.*)
 	}
 }
-
-__bss_size = (__bss_end - __bss_start) >> 3;

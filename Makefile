@@ -43,6 +43,8 @@ $(elf): $(OBJS) link.ld
 
 $(img): bootblock $(elf)
 
+iso: $(iso)
+
 $(iso): $(elf) boot/grub.cfg
 	@mkdir -p iso/boot/grub
 	@cp boot/grub.cfg iso/boot/grub
@@ -57,6 +59,6 @@ qemu-img: $(img)
 	$(QEMU) -nographic -drive file=$(img),index=0,media=disk,format=raw -smp $(NCPU) -m $(MEMSZ)
 
 qemu-iso: $(iso)
-	$(QEMU) -nographic -drive file=$(iso),format=raw -smp $(NCPU) -m $(MEMSZ)
+	$(QEMU) -drive file=$(iso),format=raw -smp $(NCPU) -m $(MEMSZ)
 
 .PHONY: clean qemu

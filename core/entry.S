@@ -27,12 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <akarivmm/asm.h>
+#include <akari/asm.h>
+#include <akari/mm.h>
 
 #define MULTIBOOT2_MAGIC	0xe85250d6
 #define MULTIBOOT2_FLAGS	0		// 32bit i386
 #define MULTIBOOT2_LENGTH	(header_end - multiboot_header)
 #define CHECKSUM		0x100000000 - (MULTIBOOT2_MAGIC + MULTIBOOT2_FLAGS + MULTIBOOT2_LENGTH)
+
+#define pa(x)		(x - VA_OFFSET)
 
 .p2align 2
 
@@ -55,30 +58,41 @@ header_end:
 entry32:
 	cli
 
+	movl	$0x2f4b2f4f, (0xb8000)
+
+	// clear .bss
+	cld
+	xorl	%eax, %eax
+	movl	$pa(__bss_start), %edi
+	movl	$pa(__bss_end), %ecx
+	subl	%edi, %ecx
+	shrl	$2, %ecx
+	rep	stosl
 	// enable PAE
 	movl	%cr4, %eax
 	orl	$CR4_PAE, %eax
 	movl	%eax, %cr4
-
 	// init sp
 	movl	$0x7c00, %eax
 	movl	%eax, %esp
-
 	// init pgt
-
 	// enable long mode
 	movl	$0xc0000080, %ecx
 	rdmsr
 	orl	$EFER_LME, %eax
 	wrmsr
+	// enable paging
+	mov	%cr0, %eax
+	orl	$(CR0_PE | CR0_PG), %eax
+	mov	%eax, %cr0
 
 	movl	entry64, %eax
-	jmp	*%eax
+	ljmp	*%eax
 
 .code64
 .global entry64
 entry64:
-	call	vmm_main_bsp
+	call	kmain0
 
 	// never return here!
 	jmp	.

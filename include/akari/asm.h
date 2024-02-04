@@ -30,6 +30,16 @@
 #ifndef _ASM_H
 #define _ASM_H
 
+#ifdef __ASSEMBLER__
+#define UL(a)		a
+#define ULL(a)		a
+#else	// __ASSEMBLER__
+#define UL(a)		a##ul
+#define ULL(a)		a##ull
+#endif
+
+#define CR0_PE		0x1
+#define CR0_PG		0x80000000
 #define CR4_PAE		(1 << 5)
 
 #define EFER_LME	(1 << 8)
@@ -39,12 +49,14 @@
 #include <akari/types.h>
 
 static inline void
-hlt(void) {
+hlt(void)
+{
 	asm volatile("hlt");
 }
 
 static inline u32
-inb(u16 port) {
+inb(u16 port)
+{
 	return 0;
 }
 

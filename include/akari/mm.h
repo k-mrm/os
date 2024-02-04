@@ -27,20 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _COMPILER_H
-#define _COMPILER_H
+#ifndef _MM_H
+#define _MM_H
 
-#define __unused        __attribute__((unused))
-#define __fallthrough   __attribute__((fallthrough))
-#define __packed        __attribute__((packed))
-#define __aligned(n)    __attribute__((aligned(n)))
-#define __noreturn      __attribute__((noreturn))
-#define __section(s)    __attribute__((section(s)))
-#define __used          __attribute__((used))
+#include <akari/asm.h>
 
-#define likely(cond)    __builtin_expect(!!(cond), 1)
-#define unlikely(cond)  __builtin_expect(!!(cond), 0)
+#define VA_OFFSET	ULL(0xffffff8000000000)
 
-#define __init		__section(".text.init")
+#ifndef __ASSEMBLER__
 
-#endif	/* _COMPILER_H */
+#endif	// __ASSEMBLER__
+
+#endif	// _MM_H
