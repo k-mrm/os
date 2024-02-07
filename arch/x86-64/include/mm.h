@@ -32,7 +32,9 @@
 
 #include <akari/asm.h>
 
-#define VA_OFFSET	ULL(0xffffffff80100000)
+#define VA_OFFSET	ULL(0xffffffff80000000)
+#define KERNLINK	ULL(0xffffffff80100000)
+#define KERNLINK_PA	ULL(0x100000)
 
 #ifndef __ASSEMBLER__
 

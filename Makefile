@@ -52,7 +52,7 @@ $(iso): $(elf) boot/grub.cfg
 	@grub-mkrescue -o $@ iso/
 
 clean:
-	$(RM) $(OBJS) $(elf) $(iso) $(img) boot/boot.o
+	$(RM) $(OBJS) $(elf) $(iso) $(img) $(map) boot/boot.o
 	$(RM) -rf iso/
 
 qemu-img: $(img)

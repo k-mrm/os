@@ -1,11 +1,12 @@
+OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64", "elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
-ENTRY(phys_entry32)
+ENTRY(entry32)
 
 virt = 0xffffffff80100000;
 phys = 0x100000;
 offset = virt - phys;
 
-phys_entry32 = entry32 - offset;
+phys_entry32 = ABSOLUTE(entry32 - offset);
 
 SECTIONS {
 	. = virt;

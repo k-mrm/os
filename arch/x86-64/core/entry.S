@@ -57,18 +57,24 @@ header_end:
 .global entry32
 entry32:
 	cli
-
+	// msg [OK]
 	movl	$0x2f4b2f4f, (0xb8000)
 
 	// save multiboot information
+	//movl	%eax, (multiboot_magic)
+	//movl	%ebx, (multiboot_info)
+	// init sp
+	movl	$0x7c00, %eax
+	movl	%eax, %esp
+	
+	call	bootcheck
+
 	// enable PAE
 	movl	%cr4, %eax
 	orl	$CR4_PAE, %eax
 	movl	%eax, %cr4
-	// init sp
-	movl	$0x7c00, %eax
-	movl	%eax, %esp
 	// init pgt
+	call	initpgt
 	// enable long mode
 	movl	$0xc0000080, %ecx
 	rdmsr
@@ -84,6 +90,12 @@ entry32:
 
 	hlt
 
+bootcheck:
+
+initpgt:
+
+multiboot_magic:
+	.quad	0
 multiboot_info:
 	.quad	0
 
