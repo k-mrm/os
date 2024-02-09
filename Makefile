@@ -4,16 +4,8 @@ include $(CONFIG)
 
 DIR ?= .
 
-CC = $(PREFIX)gcc
-AS = $(PREFIX)as
-LD = $(PREFIX)ld
-OBJCOPY = $(PREFIX)objcopy
-
-CFLAGS := -Wall -Og -g -MD -ffreestanding -nostdinc -nostdlib -nostartfiles
-CFLAGS += -I ./include/
-LDFLAGS :=
-
 QEMUPREFIX ?=
+QEMU = $(QEMUPREFIX)qemu-system-x86_64
 
 NAME = kernel
 elf = $(NAME).elf
@@ -27,25 +19,29 @@ MEMSZ ?= 512
 arch-$(CONFIG_X86_64) := x86-64
 arch-$(CONFIG_AARCH64) := aarch64
 
+ifndef arch-1
+$(error arch is not defined)
+endif
+
 subdirs-1 = core arch/$(arch-1)
-subdirs-1 += driver
+#subdirs-1 += driver
 
 OBJS = $(objs-1:%=%)
 
 $(elf): arch/$(arch-1)/link.ld $(CONFIG)
 	$(MAKE) -f Makefile.build build DIR=$(DIR)
-	@$(LD) -n $(LDFLAGS) -Map $(map) -T arch/$(arch-1)/link.ld -o $@ $(OBJS)
+	@$(LD) -n -Map $(map) -T arch/$(arch-1)/link.ld -o $@ output.o
 
 iso: $(iso)
 
-$(iso): $(elf) boot/grub.cfg
+$(iso): $(elf) grub.cfg
 	@mkdir -p iso/boot/grub
-	@cp boot/grub.cfg iso/boot/grub
+	@cp grub.cfg iso/boot/grub
 	@cp $(elf) iso/boot/
 	@grub-mkrescue -o $@ iso/
 
 clean:
-	$(RM) $(OBJS) $(elf) $(iso) $(img) $(map) boot/boot.o
+	$(RM) $(elf) $(iso) $(img) $(map)
 	$(RM) -rf iso/
 
 #qemu-img: $(img)

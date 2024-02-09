@@ -27,8 +27,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <akari/asm.h>
-#include <akari/mm.h>
+#include <x86-64/asm.h>
+#include <x86-64/mm.h>
 
 #define MULTIBOOT2_MAGIC	0xe85250d6
 #define MULTIBOOT2_FLAGS	0		// 32bit i386

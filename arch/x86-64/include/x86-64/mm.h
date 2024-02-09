@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, akarilab.net
+ * Copyright (c) 2024, akarilab.net
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,7 @@
 #ifndef _MM_H
 #define _MM_H
 
-#include <akari/asm.h>
+#include <x86-64/asm.h>
 
 #define VA_OFFSET	ULL(0xffffffff80000000)
 #define KERNLINK	ULL(0xffffffff80100000)

@@ -1,15 +1,31 @@
+PREFIX = 
+CC = $(PREFIX)gcc
+AS = $(PREFIX)as
+LD = $(PREFIX)ld
+OBJCOPY = $(PREFIX)objcopy
+
+CFLAGS := -Wall -Og -g -MD -ffreestanding -nostdinc -nostdlib -nostartfiles
+CFLAGS += -I ./include/
+LDFLAGS := -g -nostdlib -nostartfiles --build-id=none -static
+
 include $(CONFIG)
 include $(DIR)/Makefile
 
-subout = $(subdirs-1:%=$(DIR)%/output.o)
-objs = $(subout) $(obj-1)
+subout = $(subdirs-1:%=$(DIR)/%/output.o)
+obj = $(obj-1:%=$(DIR)/%)
+objs = $(subout) $(obj)
 
 .PHONY: build
 build: $(DIR)/output.o
 
+$(subout): 
+	$(MAKE) -f Makefile.build build DIR=$(@D)
+
 $(DIR)/output.o: $(objs)
 	@echo LD $@
-	$(CC) $(LDFLAGS) -Wl,-r -o $(DIR)/output.o $(objs)
+	$(LD) $(LDFLAGS) -r -o $(DIR)/output.o $(objs)
+
+.SUFFIXES : .c .S .o
 
 %.o: %.c
 	@echo CC $@

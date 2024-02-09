@@ -30,7 +30,6 @@
 #ifndef _MULTIBOOT_H
 #define _MULTIBOOT_H
 
-#include <akari/asm.h>
 #include <akari/compiler.h>
 
 // MultiBoot2
