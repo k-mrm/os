@@ -43,7 +43,7 @@ $(iso): $(elf) grub.cfg
 clean:
 	$(RM) $(elf) $(iso) $(img) $(map)
 	$(RM) -rf iso/
-	$(MAKE) -f Makefile.build clean DIR=$(DIR)
+	$(MAKE) -f Makefile.build cleand DIR=$(DIR)
 
 #qemu-img: $(img)
 #	$(QEMU) -nographic -drive file=$(img),index=0,media=disk,format=raw -smp $(NCPU) -m $(MEMSZ)

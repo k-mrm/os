@@ -16,13 +16,13 @@ subc = $(subdirs-1:%=$(DIR)/%/clean)
 obj = $(obj-1:%=$(DIR)/%)
 objs = $(subout) $(obj)
 
-.PHONY: build clean $(subc)
+.PHONY: build cleand $(subc)
 build: $(DIR)/output.o
 
 $(subc):
-	$(MAKE) -f Makefile.build clean DIR=$(@D)
+	$(MAKE) -f Makefile.build cleand DIR=$(@D)
 
-clean: $(subc)
+cleand: $(subc)
 	@echo CLEAN $(DIR)
 	$(RM) $(obj) $(DIR)/output.o
 
