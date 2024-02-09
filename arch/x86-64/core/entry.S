@@ -70,6 +70,7 @@ entry32:
 	movl	%eax, %esp
 	
 	call	bootcheck
+	call	cpuverify
 
 	// enable PAE
 	movl	%cr4, %eax
@@ -97,13 +98,44 @@ bootcheck:
 	leal	pa(multiboot_magic), %edx
 	movl	(%edx), %eax
 	cmpl	$0x36d76289, %eax	// multiboot magic
-	je	1f
-	// error
-	movl	$0x0e410e41, (0xb8000)
-1:
+	jne	booterror
+	ret
+
+cpuverify:
+	// cpuid
+	pushfl
+	pop	%eax
+	mov	%eax, %ecx
+	xor	$(1 << 21), %eax 
+	push	%eax
+	popfl
+	pushfl
+	pop	%eax
+	push	%ecx
+	popfl
+	xor	%eax, %ecx
+	jz	nocpuid
+	// longmode support
+	mov	$0x80000001, %eax
+	cpuid
+	test	$CPUID_EXT1_EDX_64BIT, %edx	
+	jz	nolongmode
 	ret
 
 initpgt:
+	jmp	.
+	ret
+
+nocpuid:
+	movl	$1, %eax
+	jmp	booterror
+nolongmode:
+	movl	$2, %eax
+	jmp	booterror
+booterror:
+	// [NG]
+	movl	$0x0e470e4e, (0xb8000)
+	hlt
 
 multiboot_magic:
 	.quad	0

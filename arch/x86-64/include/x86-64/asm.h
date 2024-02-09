@@ -44,6 +44,8 @@
 
 #define EFER_LME	(1 << 8)
 
+#define CPUID_EXT1_EDX_64BIT	0x20000000
+
 #ifndef __ASSEMBLER__
 
 #include <akari/types.h>
