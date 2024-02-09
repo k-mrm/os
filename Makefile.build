@@ -1,0 +1,20 @@
+include $(CONFIG)
+include $(DIR)/Makefile
+
+subout = $(subdirs-1:%=$(DIR)%/output.o)
+objs = $(subout) $(obj-1)
+
+.PHONY: build
+build: $(DIR)/output.o
+
+$(DIR)/output.o: $(objs)
+	@echo LD $@
+	$(CC) $(LDFLAGS) -Wl,-r -o $(DIR)/output.o $(objs)
+
+%.o: %.c
+	@echo CC $@
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.S
+	@echo CC $@
+	@$(CC) $(CFLAGS) -c $< -o $@
