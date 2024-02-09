@@ -61,8 +61,10 @@ entry32:
 	movl	$0x2f4b2f4f, (0xb8000)
 
 	// save multiboot information
-	//movl	%eax, (multiboot_magic)
-	//movl	%ebx, (multiboot_info)
+	leal	pa(multiboot_magic), %edx
+	movl	%eax, (%edx)
+	leal	pa(multiboot_info), %edx
+	movl	%ebx, (%edx)
 	// init sp
 	movl	$0x7c00, %eax
 	movl	%eax, %esp
@@ -88,9 +90,18 @@ entry32:
 	//movl	entry64, %eax
 	//ljmpl	*%eax
 
+	jmp 	.
 	hlt
 
 bootcheck:
+	leal	pa(multiboot_magic), %edx
+	movl	(%edx), %eax
+	cmpl	$0x36d76289, %eax	// multiboot magic
+	je	1f
+	// error
+	movl	$0x0e410e41, (0xb8000)
+1:
+	ret
 
 initpgt:
 

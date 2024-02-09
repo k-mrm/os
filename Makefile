@@ -26,11 +26,9 @@ endif
 subdirs-1 = core arch/$(arch-1)
 #subdirs-1 += driver
 
-OBJS = $(objs-1:%=%)
-
 $(elf): arch/$(arch-1)/link.ld $(CONFIG)
 	$(MAKE) -f Makefile.build build DIR=$(DIR)
-	@$(LD) -n -Map $(map) -T arch/$(arch-1)/link.ld -o $@ output.o
+	@$(LD) -n -Map $(map) -T arch/$(arch-1)/link.ld -o $@ ./output.o
 
 iso: $(iso)
 
