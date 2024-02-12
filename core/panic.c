@@ -28,70 +28,25 @@
  */
 
 #include <akari/types.h>
-#include <akari/compiler.h>
 #include <akari/printk.h>
+#include <akari/stdarg.h>
 #include <akari/panic.h>
-#include <x86-64/asm.h>
 
-#include "serial.h"
-#include "multiboot.h"
-
-static void
-ParseBoot(MULTIBOOT_INFO *mb)
-{
-	MULTIBOOT_TAG *tag;
-
-	if (!mb)
-		return;
-
-	for (tag = (MULTIBOOT_TAG *)((char *)mb + 8);
-	     tag->Type != MULTIBOOT_TAG_TYPE_END;
-	     tag = (MULTIBOOT_TAG *)((char *)tag + ((tag->Size + 7) & ~7))) {
-		switch (tag->Type) {
-		case MULTIBOOT_TAG_TYPE_CMDLINE: {
-			MULTIBOOT_TAG_STRING *cmd =
-				(MULTIBOOT_TAG_STRING *)tag;
-			printk("cmdline: %s\n", cmd->String);
-			break;
-		}
-		case MULTIBOOT_TAG_TYPE_MMAP: {
-			MULTIBOOT_MMAP_ENTRY *e;
-			MULTIBOOT_TAG_MMAP *mmap =
-				(MULTIBOOT_TAG_MMAP *)tag;
-
-			for (e = mmap->Entries;
-			     (char *)e < (char *)mmap + mmap->Size;
-			     e = (MULTIBOOT_MMAP_ENTRY *)((char *)e + mmap->EntrySize)) {
-				printk ("base: %p-%p type:%x\n", e->Addr, e->Addr+e->Len,
-							         e->Type);
-			}
-			break;	
-		}
-		default:
-			break;
-		}
-	}
-}
-
-// bsp main
 void __noreturn
-kmain0(MULTIBOOT_INFO *mb)
+panic(char *msg, ...)
 {
-	SerialInit();
-	printk("Hello %dbit\n", 64);
+	va_list ap;
+	char buf[256] = {0};
+	int n;
 
-	ParseBoot(mb);
+	va_start(ap, msg);
+
+	n = vsprintk(buf, msg, ap);
+
+	va_end(ap);
+
+	printk("kernel panic: %s\n", buf);
 
 	for (;;)
-		HLT;
-
-	panic("kmain exit!");
-}
-
-// ap main
-void __noreturn
-kmainap(void)
-{
-	for (;;)
-		HLT;
+		;
 }

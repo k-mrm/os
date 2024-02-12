@@ -121,6 +121,8 @@ vsprintk(char *buf, const char *fmt, va_list ap)
 				n += len;
 				break;
 			case 'p':
+				buf[n++] = '0';
+				buf[n++] = 'x';
 				len = sprintiu64(buf + n, va_arg(ap, u64), 16, false);
 				n += len;
 				break;

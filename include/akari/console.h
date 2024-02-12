@@ -38,9 +38,9 @@ struct CONSOLE {
 	const char *Name;
 	void *Priv;
 
-	int (*Init)(CONSOLE *);
-	void (*Write)(CONSOLE *, const char *, uint);
-	void (*Read)(CONSOLE *, char *, uint);
+	int 	(*Init)(CONSOLE *);
+	void 	(*Write)(CONSOLE *, const char *, uint);
+	void 	(*Read)(CONSOLE *, char *, uint);
 };
 
 void ConsoleRegister(CONSOLE *);

@@ -32,11 +32,13 @@
 
 #include <akari/compiler.h>
 
-// MultiBoot2
+// MultiBoot1/MultiBoot2
 
-typedef struct MULTIBOOTINFO	MULTIBOOTINFO;
+typedef struct MULTIBOOT_INFO	MULTIBOOT_INFO;
+typedef struct MULTIBOOT1_INFO	MULTIBOOT1_INFO;
 
-struct MULTIBOOTINFO {
+// MultiBoot1
+struct MULTIBOOT1_INFO {
 	u32 	Flags;			// offset 0
 	u32	MemLower;		// offset 4
 	u32	MemUpper;		// offset 8
@@ -59,5 +61,68 @@ struct MULTIBOOTINFO {
 	u16	VbeInterfaceOff;	// offset 84
 	u16	VbeInterfaceLen;	// offset 86
 } __packed;
+
+#define MULTIBOOT_TAG_ALIGN                  8
+#define MULTIBOOT_TAG_TYPE_END               0
+#define MULTIBOOT_TAG_TYPE_CMDLINE           1
+#define MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME  2
+#define MULTIBOOT_TAG_TYPE_MODULE            3
+#define MULTIBOOT_TAG_TYPE_BASIC_MEMINFO     4
+#define MULTIBOOT_TAG_TYPE_BOOTDEV           5
+#define MULTIBOOT_TAG_TYPE_MMAP              6
+#define MULTIBOOT_TAG_TYPE_VBE               7
+#define MULTIBOOT_TAG_TYPE_FRAMEBUFFER       8
+#define MULTIBOOT_TAG_TYPE_ELF_SECTIONS      9
+#define MULTIBOOT_TAG_TYPE_APM               10
+#define MULTIBOOT_TAG_TYPE_EFI32             11
+#define MULTIBOOT_TAG_TYPE_EFI64             12
+#define MULTIBOOT_TAG_TYPE_SMBIOS            13
+#define MULTIBOOT_TAG_TYPE_ACPI_OLD          14
+#define MULTIBOOT_TAG_TYPE_ACPI_NEW          15
+#define MULTIBOOT_TAG_TYPE_NETWORK           16
+#define MULTIBOOT_TAG_TYPE_EFI_MMAP          17
+#define MULTIBOOT_TAG_TYPE_EFI_BS            18
+#define MULTIBOOT_TAG_TYPE_EFI32_IH          19
+#define MULTIBOOT_TAG_TYPE_EFI64_IH          20
+#define MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR    21
+
+typedef struct MULTIBOOT_TAG		MULTIBOOT_TAG;
+typedef struct MULTIBOOT_TAG_STRING	MULTIBOOT_TAG_STRING;
+typedef struct MULTIBOOT_TAG_MMAP	MULTIBOOT_TAG_MMAP;
+typedef struct MULTIBOOT_MMAP_ENTRY	MULTIBOOT_MMAP_ENTRY;
+
+struct MULTIBOOT_INFO {
+	u32	TotalSize;
+	u32	_Rsvd;
+} __packed;
+
+struct MULTIBOOT_TAG {
+	u16	Type;
+	u16	Flags;
+	u32	Size;
+} __packed;
+
+struct MULTIBOOT_TAG_STRING {
+	u32	Type;
+	u32	Size;
+	char	String[0];
+} __packed;
+
+struct MULTIBOOT_MMAP_ENTRY {
+	u64	Addr;
+	u64	Len;
+	u32	Type;
+	u32	Zero;
+} __packed;
+
+struct MULTIBOOT_TAG_MMAP {
+	u32	Type;
+	u32	Size;
+	u32	EntrySize;
+	u32	EntryVersion;
+
+	MULTIBOOT_MMAP_ENTRY	Entries[0];
+} __packed;
+
 
 #endif	// _MULTIBOOT_H

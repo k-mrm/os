@@ -30,6 +30,9 @@
 #ifndef _PRINTK_H
 #define _PRINTK_H
 
+#include <akari/stdarg.h>
+
 int printk(const char *fmt, ...);
+int vsprintk(char *buf, const char *fmt, va_list ap);
 
 #endif	// _PRINTK_H

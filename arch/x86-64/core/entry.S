@@ -213,7 +213,8 @@ entry64:
 	shrl	$2, %ecx
 	rep	stosl
 
-	leaq	multiboot_info, %rdi
+	movq	(multiboot_info), %rdi
+	addq	$VA_OFFSET, %rdi	
 	call	kmain0
 
 	// never return here!
