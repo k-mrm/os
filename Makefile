@@ -47,6 +47,6 @@ clean:
 #	$(QEMU) -nographic -drive file=$(img),index=0,media=disk,format=raw -smp $(NCPU) -m $(MEMSZ)
 
 qemu-iso: $(iso)
-	$(QEMU) -drive file=$(iso),format=raw -smp $(NCPU) -m $(MEMSZ)
+	$(QEMU) -nographic -drive file=$(iso),format=raw -serial mon:stdio -smp $(NCPU) -m $(MEMSZ)
 
 .PHONY: clean qemu iso

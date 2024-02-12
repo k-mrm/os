@@ -27,47 +27,87 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_ASM_H
-#define _X86_ASM_H
-
-#ifdef __ASSEMBLER__
-#define UL(a)		a
-#define ULL(a)		a
-#else	// __ASSEMBLER__
-#define UL(a)		a##ul
-#define ULL(a)		a##ull
-#endif
-
-#define CR0_PE		0x1
-#define CR0_PG		0x80000000
-#define CR4_PAE		(1 << 5)
-
-#define EFER_LME	(1 << 8)
-
-#define CPUID_EXT1_EDX_64BIT	0x20000000
-
-#ifndef __ASSEMBLER__
-
 #include <akari/types.h>
+#include <akari/string.h>
 
-#define	HLT	asm volatile ("hlt")
-
-static inline void
-outb(u16 port, u8 data)
+void *
+memcpy(void *dst, const void *src, u64 n)
 {
-	asm volatile ("outb %0, %1" : "=a"(data) : "d"(port));
+	return memmove(dst, src, n);
 }
 
-static inline u8
-inb(u16 port)
+void *
+memmove(void *dst, const void *src, u64 n)
 {
-	u8 data;
+	char *d = dst;
+	const char *s = src;
 
-	asm volatile ("inb %1, %0" : "=a"(data) : "d"(port));
+	if (s > d) {
+		while (n-- > 0)
+			*d++ = *s++;
+	} else {
+		d += n;
+		s += n;
+		while (n-- > 0)
+			*--d = *--s;
+	}
 
-	return data;
+	return dst;
 }
 
-#endif	// __ASSEMBLER__
+void *
+memset(void *dst, int c, u64 n)
+{
+	char *d = dst;
 
-#endif	// _X86_ASM_H
+	while (n-- > 0)
+		*d++ = c;
+
+	return dst;
+}
+
+char *
+strcpy(char *dst, const char *src)
+{
+	char *r = dst;
+
+	while ((*dst++ = *src++) != 0)
+		;
+
+	return r;
+}
+
+int
+strcmp(const char *s1, const char *s2)
+{
+	while (*s1 && *s1 == *s2) {
+		s1++;
+		s2++;
+	}
+
+	return *s1 - *s2;
+}
+
+int
+strncmp(const char *s1, const char *s2, u64 len)
+{
+	while (*s1 && *s1 == *s2 && len > 0) {
+		s1++;
+		s2++;
+		len--;
+	}
+	if (len == 0)
+		return 0;
+
+	return *s1 - *s2;
+}
+
+uint
+strlen(const char *s)
+{
+	uint i = 0;
+	while (*s++)
+		i++;
+
+	return i;
+}

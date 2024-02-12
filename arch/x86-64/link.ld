@@ -36,7 +36,7 @@ SECTIONS {
 	}
 
 	. = ALIGN(4096);
-	.boot_pgt : {
+	.boot_pgt : AT(ADDR(.boot_pgt) - offset) {
 		__boot_pgt_s = .;
 		__boot_pml4 = .;
 		. += 4096;
@@ -48,7 +48,7 @@ SECTIONS {
     	}
 
 	. = ALIGN(4096);
-	.bss : AT(ADDR(.rodata) - offset) {
+	.bss : AT(ADDR(.bss) - offset) {
 		__bss_start = .;
 		*(.bss .bss.*)
 		*(COMMON)

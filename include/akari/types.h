@@ -38,14 +38,15 @@ typedef unsigned short 	u16;
 typedef signed short 	i16;
 typedef unsigned char 	u8;
 typedef signed char 	i8;
+typedef unsigned int	uint;
 
 /* physical address */
-typedef u64 PHYSADDR;
-typedef u64 DMAADDR;
+typedef u64 	PHYSADDR;
+typedef u64 	DMAADDR;
 
-#define NULL ((void *)0)
+#define NULL 	((void *)0)
 
-typedef _Bool bool;
+typedef _Bool	bool;
 
 #define true 	1
 #define false 	0

@@ -27,47 +27,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_ASM_H
-#define _X86_ASM_H
-
-#ifdef __ASSEMBLER__
-#define UL(a)		a
-#define ULL(a)		a
-#else	// __ASSEMBLER__
-#define UL(a)		a##ul
-#define ULL(a)		a##ull
-#endif
-
-#define CR0_PE		0x1
-#define CR0_PG		0x80000000
-#define CR4_PAE		(1 << 5)
-
-#define EFER_LME	(1 << 8)
-
-#define CPUID_EXT1_EDX_64BIT	0x20000000
-
-#ifndef __ASSEMBLER__
+#ifndef _STRING_H
+#define _STRING_H
 
 #include <akari/types.h>
 
-#define	HLT	asm volatile ("hlt")
+void *memcpy(void *dst, const void *src, u64 n);
+void *memmove(void *dst, const void *src, u64 n);
+void *memset(void *dst, int c, u64 n);
+int strcmp(const char *s1, const char *s2);
+uint strlen(const char *s);
+char *strcpy(char *dst, const char *src);
 
-static inline void
-outb(u16 port, u8 data)
-{
-	asm volatile ("outb %0, %1" : "=a"(data) : "d"(port));
-}
-
-static inline u8
-inb(u16 port)
-{
-	u8 data;
-
-	asm volatile ("inb %1, %0" : "=a"(data) : "d"(port));
-
-	return data;
-}
-
-#endif	// __ASSEMBLER__
-
-#endif	// _X86_ASM_H
+#endif	// _STRING_H

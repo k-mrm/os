@@ -27,47 +27,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_ASM_H
-#define _X86_ASM_H
-
-#ifdef __ASSEMBLER__
-#define UL(a)		a
-#define ULL(a)		a
-#else	// __ASSEMBLER__
-#define UL(a)		a##ul
-#define ULL(a)		a##ull
-#endif
-
-#define CR0_PE		0x1
-#define CR0_PG		0x80000000
-#define CR4_PAE		(1 << 5)
-
-#define EFER_LME	(1 << 8)
-
-#define CPUID_EXT1_EDX_64BIT	0x20000000
-
-#ifndef __ASSEMBLER__
+#ifndef _TTY_H
+#define _TTY_H
 
 #include <akari/types.h>
+#include <akari/console.h>
 
-#define	HLT	asm volatile ("hlt")
+typedef struct TTY	TTY;
 
-static inline void
-outb(u16 port, u8 data)
-{
-	asm volatile ("outb %0, %1" : "=a"(data) : "d"(port));
-}
+struct TTY {
+	const char *Name;
 
-static inline u8
-inb(u16 port)
-{
-	u8 data;
+	int (*Write)(TTY *, const char *, uint);
+	int (*Read)(TTY *, const char *, uint);
+	void (*Flush)(TTY *);
+};
 
-	asm volatile ("inb %1, %0" : "=a"(data) : "d"(port));
+void TTYRegister(TTY *tty);
 
-	return data;
-}
-
-#endif	// __ASSEMBLER__
-
-#endif	// _X86_ASM_H
+#endif	// _TTY_H

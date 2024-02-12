@@ -29,25 +29,22 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <akari/printk.h>
 #include <x86-64/asm.h>
+
+#include "serial.h"
 #include "multiboot.h"
 
 // bsp main
 void __noreturn
-kmain0(MULTIBOOTINFO *bootinfo)
+kmain0(MULTIBOOTINFO *mb)
 {
-	volatile u16 *vga = 0xb8000;
-	char *msg = "64Bit Hello!";
-	char c;
-	int off = 0;
-
-	while ((c = msg[off])) {
-		*(vga + off) = 0x0700 | c;
-		off++;
-	}
+	SerialInit();
+	printk ("YAJU SENPAI 64bit\n");
+	printk ("IKISUGIIIIIIIIIII\n");
 
 	for(;;)
-		hlt();
+		HLT;
 }
 
 // ap main
@@ -55,5 +52,5 @@ void __noreturn
 kmainap(void)
 {
 	for(;;)
-		hlt();
+		HLT;
 }

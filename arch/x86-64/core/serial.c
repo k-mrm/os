@@ -27,47 +27,110 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_ASM_H
-#define _X86_ASM_H
-
-#ifdef __ASSEMBLER__
-#define UL(a)		a
-#define ULL(a)		a
-#else	// __ASSEMBLER__
-#define UL(a)		a##ul
-#define ULL(a)		a##ull
-#endif
-
-#define CR0_PE		0x1
-#define CR0_PG		0x80000000
-#define CR4_PAE		(1 << 5)
-
-#define EFER_LME	(1 << 8)
-
-#define CPUID_EXT1_EDX_64BIT	0x20000000
-
-#ifndef __ASSEMBLER__
+// serial port device driver
 
 #include <akari/types.h>
+#include <akari/console.h>
+#include <x86-64/asm.h>
 
-#define	HLT	asm volatile ("hlt")
+#define	COM1	0x3f8
+#define	COM2	0x2f8
 
-static inline void
-outb(u16 port, u8 data)
+#define DATA	0x0
+#define IER	0x1
+#define DLL	0x0
+#define DLH	0x1
+#define IIR	0x2
+#define FCR	0x2
+#define LCR	0x3
+#define MCR	0x4
+#define LSR	0x5
+#define MSR	0x6
+
+#define DLAB	0x80
+
+typedef struct COM	COM;
+struct COM {
+	u16 Port;
+	u32 Baud;
+};
+
+static COM com = {
+	.Port = COM1,
+	.Baud = 115200,
+};
+
+static int
+cominit(CONSOLE *cs)
 {
-	asm volatile ("outb %0, %1" : "=a"(data) : "d"(port));
+	COM *com = cs->Priv;
+	u16 port = com->Port;
+	u16 div = 115200 / com->Baud;
+
+	// Disable Interrupt
+	outb(port + IER, 0x0);
+	// Disable FIFO
+	outb(port + FCR, 0x0);
+	outb(port + LCR, 0x80);
+	outb(port + DLL, div & 0xff);
+	outb(port + DLH, (div >> 8) & 0xff);
+	outb(port + MCR, 0x3);
+
+	// 8n1
+	outb(port + LCR, 0x3);
+
+	return 0;
 }
 
-static inline u8
-inb(u16 port)
+static bool
+comempty(COM *com)
 {
-	u8 data;
-
-	asm volatile ("inb %1, %0" : "=a"(data) : "d"(port));
-
-	return data;
+	return inb(com->Port + LSR) & 0x20;
 }
 
-#endif	// __ASSEMBLER__
+static void
+comsend(COM *com, char c)
+{
+	while (comempty(com) == 0)
+		;
 
-#endif	// _X86_ASM_H
+	outb(com->Port + DATA, c);
+}
+
+static void
+computc(CONSOLE *cs, char c)
+{
+	COM *com = cs->Priv;
+
+	if (c == '\n')
+		comsend(com, '\r');
+	comsend(com, c);
+}
+
+static void
+comwrite(CONSOLE *cs, const char *buf, uint n)
+{
+	for (uint i = 0; i < n && buf[i]; i++) {
+		computc(cs, buf[i]);
+	}
+}
+
+static void
+comread(CONSOLE *cs, char *buf, uint n)
+{
+	;
+}
+
+static CONSOLE console = {
+	.Name = "COM",
+	.Priv = &com,
+	.Init = cominit,
+	.Write = comwrite,
+	.Read = NULL,
+};
+
+void
+SerialInit(void)
+{
+	ConsoleRegister(&console);
+}

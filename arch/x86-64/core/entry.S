@@ -35,7 +35,7 @@
 #define MULTIBOOT2_LENGTH	(header_end - multiboot_header)
 #define CHECKSUM		0x100000000 - (MULTIBOOT2_MAGIC + MULTIBOOT2_FLAGS + MULTIBOOT2_LENGTH)
 
-#define pa(x)		(x - VA_OFFSET)
+#define pa(x)			(x - VA_OFFSET)
 
 #define	SEG_CODE32		0x08
 #define	SEG_DATA32		0x10
@@ -213,6 +213,7 @@ entry64:
 	shrl	$2, %ecx
 	rep	stosl
 
+	#leaq	multiboot_info, %rdi
 	call	kmain0
 
 	// never return here!
