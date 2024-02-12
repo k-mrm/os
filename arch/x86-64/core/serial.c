@@ -71,9 +71,11 @@ cominit(CONSOLE *cs)
 	outb(port + IER, 0x0);
 	// Disable FIFO
 	outb(port + FCR, 0x0);
+	// Baudrate
 	outb(port + LCR, 0x80);
 	outb(port + DLL, div & 0xff);
 	outb(port + DLH, (div >> 8) & 0xff);
+	// RTS | DTR
 	outb(port + MCR, 0x3);
 
 	// 8n1

@@ -213,7 +213,7 @@ entry64:
 	shrl	$2, %ecx
 	rep	stosl
 
-	#leaq	multiboot_info, %rdi
+	leaq	multiboot_info, %rdi
 	call	kmain0
 
 	// never return here!

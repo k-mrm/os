@@ -40,8 +40,8 @@ void __noreturn
 kmain0(MULTIBOOTINFO *mb)
 {
 	SerialInit();
-	printk ("YAJU SENPAI 64bit\n");
-	printk ("IKISUGIIIIIIIIIII\n");
+	printk ("Hello %dbit\n", 64);
+	printk ("mb 0x%x\n", mb);
 
 	for(;;)
 		HLT;

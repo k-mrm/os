@@ -55,7 +55,7 @@
 static inline void
 outb(u16 port, u8 data)
 {
-	asm volatile ("outb %0, %1" : "=a"(data) : "d"(port));
+	asm volatile ("outb %0, %1" :: "a"(data), "d"(port));
 }
 
 static inline u8
