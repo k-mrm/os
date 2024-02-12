@@ -27,8 +27,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _ASM_H
-#define _ASM_H
+#ifndef _X86_ASM_H
+#define _X86_ASM_H
 
 #ifdef __ASSEMBLER__
 #define UL(a)		a
@@ -64,4 +64,4 @@ inb(u16 port)
 
 #endif	// __ASSEMBLER__
 
-#endif	// _ASM_H
+#endif	// _X86_ASM_H

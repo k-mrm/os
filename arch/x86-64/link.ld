@@ -7,6 +7,7 @@ phys = 0x100000;
 offset = virt - phys;
 
 phys_entry32 = ABSOLUTE(entry32 - offset);
+pa_trampoline64 = ABSOLUTE(trampoline64 - offset);
 
 SECTIONS {
 	. = virt;
@@ -33,6 +34,18 @@ SECTIONS {
 	.rodata : AT(ADDR(.rodata) - offset) {
 		*(.rodata .rodata.*)
 	}
+
+	. = ALIGN(4096);
+	.boot_pgt : {
+		__boot_pgt_s = .;
+		__boot_pml4 = .;
+		. += 4096;
+		__boot_pdpt = .;
+		. += 4096;
+		__boot_pd = .;
+		. += 4096;
+		__boot_pgt_e = .;
+    	}
 
 	. = ALIGN(4096);
 	.bss : AT(ADDR(.rodata) - offset) {

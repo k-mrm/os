@@ -37,6 +37,11 @@
 
 #define pa(x)		(x - VA_OFFSET)
 
+#define	SEG_CODE32		0x08
+#define	SEG_DATA32		0x10
+#define	SEG_CODE64		0x18
+#define	SEG_DATA64		0x20
+
 .p2align 2
 
 .section ".text.head"
@@ -57,8 +62,6 @@ header_end:
 .global entry32
 entry32:
 	cli
-	// msg [OK]
-	movl	$0x2f4b2f4f, (0xb8000)
 
 	// save multiboot information
 	leal	pa(multiboot_magic), %edx
@@ -68,7 +71,7 @@ entry32:
 	// init sp
 	movl	$0x7c00, %eax
 	movl	%eax, %esp
-	
+
 	call	bootcheck
 	call	cpuverify
 
@@ -83,15 +86,17 @@ entry32:
 	rdmsr
 	orl	$EFER_LME, %eax
 	wrmsr
+
+	lgdtl	pa(entrygdt_p)
+	
 	// enable paging
 	mov	%cr0, %eax
 	orl	$(CR0_PE | CR0_PG), %eax
 	mov	%eax, %cr0
 
-	//movl	entry64, %eax
-	//ljmpl	*%eax
+	movl	$0x2f4b2f4f, (0xb8000)
+	ljmpl	$SEG_CODE64, $pa_trampoline64
 
-	jmp 	.
 	hlt
 
 bootcheck:
@@ -104,26 +109,62 @@ bootcheck:
 cpuverify:
 	// cpuid
 	pushfl
-	pop	%eax
-	mov	%eax, %ecx
-	xor	$(1 << 21), %eax 
-	push	%eax
+	popl	%eax
+	movl	%eax, %ecx
+	xorl	$(1 << 21), %eax 
+	pushl	%eax
 	popfl
 	pushfl
-	pop	%eax
-	push	%ecx
+	popl	%eax
+	pushl	%ecx
 	popfl
-	xor	%eax, %ecx
+	xorl	%eax, %ecx
 	jz	nocpuid
 	// longmode support
-	mov	$0x80000001, %eax
+	movl	$0x80000001, %eax
 	cpuid
 	test	$CPUID_EXT1_EDX_64BIT, %edx	
 	jz	nolongmode
 	ret
 
 initpgt:
-	jmp	.
+	cld
+	xorl	%eax, %eax
+	leal	pa(__boot_pgt_s), %ebx	// __boot_pml4
+	movl	%ebx, %edi
+	leal	pa(__boot_pgt_e), %ecx	
+	subl	%edi, %ecx
+	shrl	$2, %ecx
+	rep	stosl
+
+	mov	%ebx, %cr3
+	leal	pa(__boot_pdpt), %eax
+	orl	$3, %eax	// P,RW bit
+	movl	$((KERNLINK_PA >> 39) & 0x1ff), %edx
+	movl	%eax, (%ebx, %edx, 8)
+	movl	$((KERNLINK >> 39) & 0x1ff), %edx
+	movl	%eax, (%ebx, %edx, 8)
+
+	leal	pa(__boot_pdpt), %ebx
+	leal	pa(__boot_pd), %eax
+	orl	$3, %eax
+	movl	$((KERNLINK_PA >> 30) & 0x1ff), %edx
+	movl	%eax, (%ebx, %edx, 8)
+	movl	$((KERNLINK >> 30) & 0x1ff), %edx
+	movl	%eax, (%ebx, %edx, 8)
+
+	// mapping 0-1 GiB
+	leal	pa(__boot_pd), %ebx
+	xorl	%ecx, %ecx
+setpde:
+	movl	$0x200000, %eax		// 2 MiB
+	mull	%ecx
+	orl	$0b10000011, %eax
+	movl	%eax, (%ebx, %ecx, 8)
+	incl	%ecx
+	cmpl	$512, %ecx
+	jne	setpde
+	
 	ret
 
 nocpuid:
@@ -142,7 +183,25 @@ multiboot_magic:
 multiboot_info:
 	.quad	0
 
+.p2align 3
+entrygdt:
+	.quad	0			// NULL
+	.quad   0x00cf9b000000ffff      // CODE32, DPL=0
+	.quad   0x00cf93000000ffff      // DATA32, DPL=0
+	.quad   0x00af9b000000ffff      // CODE64, DPL=0
+	.quad   0x00af93000000ffff      // DATA64, DPL=0
+entrygdt_e:
+
+entrygdt_p:
+	.word	entrygdt_e - entrygdt + 1
+	.quad	pa(entrygdt)
+
 .code64
+.global	trampoline64
+trampoline64:
+	movabs	$entry64, %rax
+	jmpq	*%rax
+
 .global entry64
 entry64:
 	// zero .bss
@@ -159,4 +218,3 @@ entry64:
 	// never return here!
 	cli
 	hlt
-	jmp	.

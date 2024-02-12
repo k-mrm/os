@@ -27,8 +27,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MM_H
-#define _MM_H
+#ifndef _X86_MM_H
+#define _X86_MM_H
 
 #include <x86-64/asm.h>
 
@@ -40,4 +40,4 @@
 
 #endif	// __ASSEMBLER__
 
-#endif	// _MM_H
+#endif	// _X86_MM_H
