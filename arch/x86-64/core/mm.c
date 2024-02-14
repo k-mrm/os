@@ -27,19 +27,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_MM_H
-#define _X86_MM_H
+#include <akari/sysmem.h>
+#include <x86-64/mm.h>
 
-#include <x86-64/asm.h>
+#include "mm.h"
 
-#define VA_OFFSET	ULL(0xffffffff80000000)
-#define KERNLINK	ULL(0xffffffff80100000)
-#define KERNLINK_PA	ULL(0x100000)
+extern u64 __boot_pml4[];
+extern u64 __boot_pdpt[];
 
-#define PIDX(level, va)		(((va) >> (12 + ((level) - 1) * 9)) & 0x1ff)
+void
+KillEarlyMap(void)
+{
+	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
+	__boot_pdpt[PIDX(3, KERNLINK_PA)] = 0;
+}
 
-#ifndef __ASSEMBLER__
-
-#endif	// __ASSEMBLER__
-
-#endif	// _X86_MM_H
+void
+KernelRemap(void)
+{
+	;
+}

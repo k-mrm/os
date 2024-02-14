@@ -27,19 +27,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_MM_H
-#define _X86_MM_H
+#ifndef _X86_CORE_MM_H
+#define _X86_CORE_MM_H
 
-#include <x86-64/asm.h>
+void KillEarlyMap(void);
+void KernelRemap(void);
 
-#define VA_OFFSET	ULL(0xffffffff80000000)
-#define KERNLINK	ULL(0xffffffff80100000)
-#define KERNLINK_PA	ULL(0x100000)
-
-#define PIDX(level, va)		(((va) >> (12 + ((level) - 1) * 9)) & 0x1ff)
-
-#ifndef __ASSEMBLER__
-
-#endif	// __ASSEMBLER__
-
-#endif	// _X86_MM_H
+#endif

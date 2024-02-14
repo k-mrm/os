@@ -89,6 +89,7 @@ struct MULTIBOOT1_INFO {
 typedef struct MULTIBOOT_TAG		MULTIBOOT_TAG;
 typedef struct MULTIBOOT_TAG_STRING	MULTIBOOT_TAG_STRING;
 typedef struct MULTIBOOT_TAG_MMAP	MULTIBOOT_TAG_MMAP;
+typedef struct MULTIBOOT_TAG_BOOTDEV	MULTIBOOT_TAG_BOOTDEV;
 typedef struct MULTIBOOT_MMAP_ENTRY	MULTIBOOT_MMAP_ENTRY;
 
 struct MULTIBOOT_INFO {
@@ -108,9 +109,22 @@ struct MULTIBOOT_TAG_STRING {
 	char	String[0];
 } __packed;
 
+struct MULTIBOOT_TAG_BOOTDEV {
+	u32	Type;
+	u32	Size;
+	u32	BiosDev;
+	u32	Slice;
+	u32	Part;
+} __packed;
+
 struct MULTIBOOT_MMAP_ENTRY {
 	u64	Addr;
 	u64	Len;
+#define MULTIBOOT_MEMORY_AVAILABLE              1
+#define MULTIBOOT_MEMORY_RESERVED               2
+#define MULTIBOOT_MEMORY_ACPI_RECLAIMABLE       3
+#define MULTIBOOT_MEMORY_NVS                    4
+#define MULTIBOOT_MEMORY_BADRAM                 5
 	u32	Type;
 	u32	Zero;
 } __packed;

@@ -31,10 +31,12 @@
 #include <akari/compiler.h>
 #include <akari/printk.h>
 #include <akari/panic.h>
+#include <akari/param.h>
 #include <x86-64/asm.h>
 
 #include "serial.h"
 #include "multiboot.h"
+#include "mm.h"
 
 static void
 ParseBoot(MULTIBOOT_INFO *mb)
@@ -52,6 +54,13 @@ ParseBoot(MULTIBOOT_INFO *mb)
 			MULTIBOOT_TAG_STRING *cmd =
 				(MULTIBOOT_TAG_STRING *)tag;
 			printk("cmdline: %s\n", cmd->String);
+			SetParam(cmd->String);
+			break;
+		}
+		case MULTIBOOT_TAG_TYPE_BOOTDEV: {
+			MULTIBOOT_TAG_BOOTDEV *dev =
+				(MULTIBOOT_TAG_BOOTDEV *)tag;
+			printk("Boot dev: 0x%x\n", dev->BiosDev);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_MMAP: {
@@ -64,6 +73,9 @@ ParseBoot(MULTIBOOT_INFO *mb)
 			     e = (MULTIBOOT_MMAP_ENTRY *)((char *)e + mmap->EntrySize)) {
 				printk ("base: %p-%p type:%x\n", e->Addr, e->Addr+e->Len,
 							         e->Type);
+				if (e->Type == MULTIBOOT_MEMORY_AVAILABLE) {
+					NewMemblock(e->Addr, e->Len);
+				}
 			}
 			break;	
 		}
@@ -77,10 +89,12 @@ ParseBoot(MULTIBOOT_INFO *mb)
 void __noreturn
 kmain0(MULTIBOOT_INFO *mb)
 {
+	KillEarlyMap();
 	SerialInit();
 	printk("Hello %dbit\n", 64);
 
 	ParseBoot(mb);
+	KernelRemap();
 
 	for (;;)
 		HLT;

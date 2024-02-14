@@ -27,19 +27,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_MM_H
-#define _X86_MM_H
+#include <akari/types.h>
+#include <akari/printk.h>
+#include <akari/sysmem.h>
 
-#include <x86-64/asm.h>
+SYSMEM sysmem;
 
-#define VA_OFFSET	ULL(0xffffffff80000000)
-#define KERNLINK	ULL(0xffffffff80100000)
-#define KERNLINK_PA	ULL(0x100000)
+void
+NewMemblock(PHYSADDR base, u64 size)
+{
+	MEMBLOCK *m;
+	PHYSADDR end = base + size - 1;
 
-#define PIDX(level, va)		(((va) >> (12 + ((level) - 1) * 9)) & 0x1ff)
+	m = &sysmem.mem[sysmem.nentry++];
 
-#ifndef __ASSEMBLER__
+	printk("system memory [%p-%p]\n", base, end);
 
-#endif	// __ASSEMBLER__
-
-#endif	// _X86_MM_H
+	m->Base = base;
+	m->Size = size;
+	m->Flags = 0;
+}
