@@ -28,6 +28,7 @@
  */
 
 #include <akari/kalloc.h>
+#include <akari/sysmem.h>
 
 void
 KallocInit(void)
