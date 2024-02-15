@@ -42,11 +42,11 @@ struct MEMBLOCK {
 };
 
 struct SYSMEM {
-	MEMBLOCK mem[64];
-	int nentry;
+	MEMBLOCK Mem[64];
+	int Nentry;
 };
 
-extern SYSMEM sysmem;
+extern SYSMEM Sysmem;
 
 void NewMemblock(PHYSADDR base, u64 size);
 

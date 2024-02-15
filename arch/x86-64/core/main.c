@@ -32,6 +32,7 @@
 #include <akari/printk.h>
 #include <akari/panic.h>
 #include <akari/param.h>
+#include <akari/sysmem.h>
 #include <x86-64/asm.h>
 
 #include "serial.h"

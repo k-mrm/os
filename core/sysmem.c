@@ -31,7 +31,7 @@
 #include <akari/printk.h>
 #include <akari/sysmem.h>
 
-SYSMEM sysmem;
+SYSMEM Sysmem;
 
 void
 NewMemblock(PHYSADDR base, u64 size)
@@ -39,9 +39,9 @@ NewMemblock(PHYSADDR base, u64 size)
 	MEMBLOCK *m;
 	PHYSADDR end = base + size - 1;
 
-	m = &sysmem.mem[sysmem.nentry++];
+	m = &Sysmem.Mem[Sysmem.Nentry++];
 
-	printk("system memory [%p-%p]\n", base, end);
+	printk("memory [%p-%p] available\n", base, end);
 
 	m->Base = base;
 	m->Size = size;
