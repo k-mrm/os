@@ -33,6 +33,7 @@
 #include <akari/panic.h>
 #include <akari/param.h>
 #include <akari/sysmem.h>
+#include <akari/init.h>
 #include <arch/asm.h>
 
 #include "serial.h"

@@ -31,10 +31,13 @@
 #include <akari/compiler.h>
 #include <akari/init.h>
 #include <akari/kalloc.h>
+#include <akari/panic.h>
 
 void __noreturn
 KernelMain(void)
 {
 	KallocInit();
 	TTYInit();
+
+	panic("Kernelmain Exit!\n");
 }
