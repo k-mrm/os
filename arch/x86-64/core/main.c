@@ -33,7 +33,7 @@
 #include <akari/panic.h>
 #include <akari/param.h>
 #include <akari/sysmem.h>
-#include <x86-64/asm.h>
+#include <arch/asm.h>
 
 #include "serial.h"
 #include "multiboot.h"
@@ -72,7 +72,7 @@ ParseBoot(MULTIBOOT_INFO *mb)
 			for (e = mmap->Entries;
 			     (char *)e < (char *)mmap + mmap->Size;
 			     e = (MULTIBOOT_MMAP_ENTRY *)((char *)e + mmap->EntrySize)) {
-				printk ("base: %p-%p type:%x\n", e->Addr, e->Addr+e->Len,
+				printk ("memory %p-%p type:%x\n", e->Addr, e->Addr+e->Len,
 							         e->Type);
 				if (e->Type == MULTIBOOT_MEMORY_AVAILABLE) {
 					NewMemblock(e->Addr, e->Len);
@@ -91,16 +91,15 @@ void __noreturn
 kmain0(MULTIBOOT_INFO *mb)
 {
 	KillEarlyMap();
+	// earlyconsole
 	SerialInit();
-	printk("Hello %dbit\n", 64);
+
+	printk("Booting %dbit Kernel...\n", 64);
 
 	ParseBoot(mb);
 	KernelRemap();
 
-	for (;;)
-		HLT;
-
-	panic("kmain exit!");
+	KernelMain();
 }
 
 // ap main

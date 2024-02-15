@@ -20,7 +20,7 @@ objs = $(subout) $(obj)
 build: $(DIR)/output.o
 
 $(subc):
-	$(MAKE) -f Makefile.build cleand DIR=$(@D)
+	$(MAKE) -f Makefile.build cleand DIR=$(@D) ARCH=$(ARCH)
 
 cleand: $(subc)
 	@echo CLEAN $(DIR)

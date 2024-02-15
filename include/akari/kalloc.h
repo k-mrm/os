@@ -27,23 +27,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <akari/sysmem.h>
-#include <arch/mm.h>
+#ifndef _KALLOC_H
+#define _KALLOC_H
 
-#include "mm.h"
+void KallocInit(void);
 
-extern u64 __boot_pml4[];
-extern u64 __boot_pdpt[];
-
-void
-KillEarlyMap(void)
-{
-	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
-	__boot_pdpt[PIDX(3, KERNLINK_PA)] = 0;
-}
-
-void
-KernelRemap(void)
-{
-	;
-}
+#endif	// _KALLOC_H

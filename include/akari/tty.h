@@ -43,6 +43,8 @@ struct TTY {
 	void (*Flush)(TTY *);
 };
 
-void TTYRegister(TTY *tty);
+extern TTY Ktty;	// Kernel tty
+
+void TTYInit(void);
 
 #endif	// _TTY_H

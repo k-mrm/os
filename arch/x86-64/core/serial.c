@@ -31,7 +31,7 @@
 
 #include <akari/types.h>
 #include <akari/console.h>
-#include <x86-64/asm.h>
+#include <arch/asm.h>
 
 #define	COM1	0x3f8
 #define	COM2	0x2f8
