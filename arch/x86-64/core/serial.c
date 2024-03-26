@@ -50,7 +50,8 @@
 #define DLAB	0x80
 
 typedef struct COM	COM;
-struct COM {
+struct COM
+{
 	u16 Port;
 	u32 Baud;
 };
@@ -105,14 +106,17 @@ computc(CONSOLE *cs, char c)
 	COM *com = cs->Priv;
 
 	if (c == '\n')
+	{
 		comsend(com, '\r');
+	}
 	comsend(com, c);
 }
 
 static void
 comwrite(CONSOLE *cs, const char *buf, uint n)
 {
-	for (uint i = 0; i < n && buf[i]; i++) {
+	for (uint i = 0; i < n && buf[i]; i++)
+	{
 		computc(cs, buf[i]);
 	}
 }

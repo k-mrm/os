@@ -27,26 +27,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _ARCH_MEMLAYOUT_H
+#define _ARCH_MEMLAYOUT_H
+
+#include <arch/asm.h>
+
+// Direct mapping offset
+#define DMAP_BASE	ULL(0xffff800000000000)
+#define DMAP_END	ULL(0xffffc00000000000)
+
+#define PAGE_OFFSET	DMAP_BASE
+
+#define KLINK_OFFSET	ULL(0xffffffff80000000)
+#define KERNLINK	ULL(0xffffffff80100000)
+#define KERNLINK_PA	ULL(0x100000)
+
+#ifndef __ASSEMBLER__
+
 #include <akari/types.h>
-#include <akari/printk.h>
-#include <akari/stdarg.h>
-#include <akari/panic.h>
 
-void NORETURN
-panic(char *msg, ...)
+static inline bool
+IsDmap(ulong addr)
 {
-	va_list ap;
-	char buf[256] = {0};
-	int n;
-
-	va_start(ap, msg);
-
-	n = vsprintk(buf, msg, ap);
-
-	va_end(ap);
-
-	printk("kernel panic: %s\n", buf);
-
-	for (;;)
-		;
+	return DMAP_BASE <= addr && addr < DMAP_END;
 }
+
+static inline PHYSADDR
+V2P(void *p)
+{
+	ulong va = (ulong)p;
+
+	return IsDmap((ulong)va) ? va - PAGE_OFFSET : va - KLINK_OFFSET;
+}
+
+static inline void *
+P2V(PHYSADDR pa)
+{
+	return (void *)(pa + PAGE_OFFSET);
+}
+
+#endif	// __ASSEMBLER__
+
+#endif	// _ARCH_MEMLAYOUT_H

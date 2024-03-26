@@ -40,6 +40,9 @@
 
 #ifndef __ASSEMBLER__
 
+#define	VA(pa)		((pa) + VA_OFFSET)
+#define	PA(va)		((va) - VA_OFFSET)
+
 #endif	// __ASSEMBLER__
 
 #endif	// _X86_MM_H

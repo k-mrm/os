@@ -30,7 +30,7 @@
 #ifndef _X86_CORE_MM_H
 #define _X86_CORE_MM_H
 
-void KillEarlyMap(void);
+void KillIdmap(void);
 void KernelRemap(void);
 
 #endif

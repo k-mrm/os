@@ -38,7 +38,8 @@ typedef struct MULTIBOOT_INFO	MULTIBOOT_INFO;
 typedef struct MULTIBOOT1_INFO	MULTIBOOT1_INFO;
 
 // MultiBoot1
-struct MULTIBOOT1_INFO {
+struct MULTIBOOT1_INFO
+{
 	u32 	Flags;			// offset 0
 	u32	MemLower;		// offset 4
 	u32	MemUpper;		// offset 8
@@ -60,7 +61,7 @@ struct MULTIBOOT1_INFO {
 	u16	VbeInterfaceSeg;	// offset 82
 	u16	VbeInterfaceOff;	// offset 84
 	u16	VbeInterfaceLen;	// offset 86
-} __packed;
+} PACKED;
 
 #define MULTIBOOT_TAG_ALIGN                  8
 #define MULTIBOOT_TAG_TYPE_END               0
@@ -92,32 +93,37 @@ typedef struct MULTIBOOT_TAG_MMAP	MULTIBOOT_TAG_MMAP;
 typedef struct MULTIBOOT_TAG_BOOTDEV	MULTIBOOT_TAG_BOOTDEV;
 typedef struct MULTIBOOT_MMAP_ENTRY	MULTIBOOT_MMAP_ENTRY;
 
-struct MULTIBOOT_INFO {
+struct MULTIBOOT_INFO
+{
 	u32	TotalSize;
 	u32	_Rsvd;
-} __packed;
+} PACKED;
 
-struct MULTIBOOT_TAG {
+struct MULTIBOOT_TAG
+{
 	u16	Type;
 	u16	Flags;
 	u32	Size;
-} __packed;
+} PACKED;
 
-struct MULTIBOOT_TAG_STRING {
+struct MULTIBOOT_TAG_STRING
+{
 	u32	Type;
 	u32	Size;
 	char	String[0];
-} __packed;
+} PACKED;
 
-struct MULTIBOOT_TAG_BOOTDEV {
+struct MULTIBOOT_TAG_BOOTDEV
+{
 	u32	Type;
 	u32	Size;
 	u32	BiosDev;
 	u32	Slice;
 	u32	Part;
-} __packed;
+} PACKED;
 
-struct MULTIBOOT_MMAP_ENTRY {
+struct MULTIBOOT_MMAP_ENTRY
+{
 	u64	Addr;
 	u64	Len;
 #define MULTIBOOT_MEMORY_AVAILABLE              1
@@ -127,16 +133,17 @@ struct MULTIBOOT_MMAP_ENTRY {
 #define MULTIBOOT_MEMORY_BADRAM                 5
 	u32	Type;
 	u32	Zero;
-} __packed;
+} PACKED;
 
-struct MULTIBOOT_TAG_MMAP {
+struct MULTIBOOT_TAG_MMAP
+{
 	u32	Type;
 	u32	Size;
 	u32	EntrySize;
 	u32	EntryVersion;
 
 	MULTIBOOT_MMAP_ENTRY	Entries[0];
-} __packed;
+} PACKED;
 
 
 #endif	// _MULTIBOOT_H

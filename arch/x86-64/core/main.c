@@ -35,6 +35,7 @@
 #include <akari/sysmem.h>
 #include <akari/init.h>
 #include <arch/asm.h>
+#include <arch/memlayout.h>
 
 #include "serial.h"
 #include "multiboot.h"
@@ -46,12 +47,16 @@ ParseBoot(MULTIBOOT_INFO *mb)
 	MULTIBOOT_TAG *tag;
 
 	if (!mb)
+	{
 		return;
+	}
 
 	for (tag = (MULTIBOOT_TAG *)((char *)mb + 8);
 	     tag->Type != MULTIBOOT_TAG_TYPE_END;
-	     tag = (MULTIBOOT_TAG *)((char *)tag + ((tag->Size + 7) & ~7))) {
-		switch (tag->Type) {
+	     tag = (MULTIBOOT_TAG *)((char *)tag + ((tag->Size + 7) & ~7)))
+	{
+		switch (tag->Type)
+		{
 		case MULTIBOOT_TAG_TYPE_CMDLINE: {
 			MULTIBOOT_TAG_STRING *cmd =
 				(MULTIBOOT_TAG_STRING *)tag;
@@ -72,10 +77,12 @@ ParseBoot(MULTIBOOT_INFO *mb)
 
 			for (e = mmap->Entries;
 			     (char *)e < (char *)mmap + mmap->Size;
-			     e = (MULTIBOOT_MMAP_ENTRY *)((char *)e + mmap->EntrySize)) {
+			     e = (MULTIBOOT_MMAP_ENTRY *)((char *)e + mmap->EntrySize))
+			{
 				printk ("memory %p-%p type:%x\n", e->Addr, e->Addr+e->Len,
 							         e->Type);
-				if (e->Type == MULTIBOOT_MEMORY_AVAILABLE) {
+				if (e->Type == MULTIBOOT_MEMORY_AVAILABLE)
+				{
 					NewMemblock(e->Addr, e->Len);
 				}
 			}
@@ -88,12 +95,12 @@ ParseBoot(MULTIBOOT_INFO *mb)
 }
 
 // bsp main
-void __noreturn
+void NORETURN
 kmain0(MULTIBOOT_INFO *mb)
 {
-	KillEarlyMap();
-	// earlyconsole
-	SerialInit();
+	KillIdmap();
+
+	SerialInit();	// earlyconsole
 
 	printk("Booting %dbit Kernel...\n", 64);
 
@@ -104,9 +111,11 @@ kmain0(MULTIBOOT_INFO *mb)
 }
 
 // ap main
-void __noreturn
+void NORETURN
 kmainap(void)
 {
 	for (;;)
+	{
 		HLT;
+	}
 }

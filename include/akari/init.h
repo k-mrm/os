@@ -32,6 +32,6 @@
 
 #include <akari/compiler.h>
 
-void KernelMain(void) __noreturn;
+void KernelMain(void) NORETURN;
 
 #endif	// _INIT_H

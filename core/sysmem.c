@@ -39,7 +39,7 @@ NewMemblock(PHYSADDR base, u64 size)
 	MEMBLOCK *m;
 	PHYSADDR end = base + size - 1;
 
-	m = &Sysmem.Mem[Sysmem.Nentry++];
+	m = &Sysmem.Mem[Sysmem.nEntry++];
 
 	printk("memory [%p-%p] available\n", base, end);
 

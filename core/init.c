@@ -33,11 +33,11 @@
 #include <akari/kalloc.h>
 #include <akari/panic.h>
 
-void __noreturn
+void NORETURN
 KernelMain(void)
 {
 	KallocInit();
 	TTYInit();
 
-	panic("Kernelmain Exit!\n");
+	panic("Kernelmain Exit!");
 }

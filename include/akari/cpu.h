@@ -31,5 +31,8 @@
 #define _CPU_H
 
 #include <akari/types.h>
+#include <arch/cpu.h>
+
+#define cpuid
 
 #endif	// _CPU_H

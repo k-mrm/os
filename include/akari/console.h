@@ -34,7 +34,8 @@
 
 typedef struct CONSOLE	CONSOLE;
 
-struct CONSOLE {
+struct CONSOLE
+{
 	const char *Name;
 	void *Priv;
 

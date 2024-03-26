@@ -30,6 +30,4 @@
 #ifndef _MM_H
 #define _MM_H
 
-void MMInit(void);
-
 #endif	// _MM_H

@@ -27,16 +27,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <akari/types.h>
 #include <akari/sysmem.h>
 #include <arch/mm.h>
+#include <arch/memlayout.h>
 
 #include "mm.h"
 
-extern u64 __boot_pml4[];
-extern u64 __boot_pdpt[];
+static PTE kpml4[512];
+
+extern PTE __boot_pml4[];
+extern PTE __boot_pdpt[];
+
+static void
+mappages(PAGETABLE pgt)
+{
+	;
+}
 
 void
-KillEarlyMap(void)
+ROKernel()
+{
+	;
+}
+
+void
+KillIdmap(void)
 {
 	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
 	__boot_pdpt[PIDX(3, KERNLINK_PA)] = 0;

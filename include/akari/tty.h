@@ -35,7 +35,8 @@
 
 typedef struct TTY	TTY;
 
-struct TTY {
+struct TTY
+{
 	const char *Name;
 
 	int (*Write)(TTY *, const char *, uint);

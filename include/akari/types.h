@@ -39,12 +39,16 @@ typedef signed short 	i16;
 typedef unsigned char 	u8;
 typedef signed char 	i8;
 typedef unsigned int	uint;
+typedef unsigned long 	ulong;
 
 /* physical address */
-typedef u64 	PHYSADDR;
-typedef u64 	DMAADDR;
+typedef ulong 	PHYSADDR;
+typedef ulong	DMAADDR;
 
 #define NULL 	((void *)0)
+
+typedef ulong	*PAGETABLE;
+typedef ulong	PTE;
 
 typedef _Bool	bool;
 

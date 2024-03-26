@@ -32,6 +32,6 @@
 
 #include <akari/compiler.h>
 
-void __noreturn panic(char *msg, ...);
+void panic(char *msg, ...) NORETURN;
 
 #endif	// _PANIC_H

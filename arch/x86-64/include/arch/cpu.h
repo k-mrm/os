@@ -27,26 +27,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _ARCH_CPU_H
+#define _ARCH_CPU_H
+
 #include <akari/types.h>
-#include <akari/printk.h>
-#include <akari/stdarg.h>
-#include <akari/panic.h>
+#include <arch/cpu.h>
 
-void NORETURN
-panic(char *msg, ...)
-{
-	va_list ap;
-	char buf[256] = {0};
-	int n;
-
-	va_start(ap, msg);
-
-	n = vsprintk(buf, msg, ap);
-
-	va_end(ap);
-
-	printk("kernel panic: %s\n", buf);
-
-	for (;;)
-		;
-}
+#endif	// _ARCH_CPU_H

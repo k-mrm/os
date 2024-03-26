@@ -35,15 +35,17 @@
 typedef struct MEMBLOCK		MEMBLOCK;
 typedef struct SYSMEM		SYSMEM;
 
-struct MEMBLOCK {
+struct MEMBLOCK
+{
 	PHYSADDR Base;
 	u64 Size;
 	u8 Flags;
 };
 
-struct SYSMEM {
+struct SYSMEM
+{
 	MEMBLOCK Mem[64];
-	int Nentry;
+	int nEntry;
 };
 
 extern SYSMEM Sysmem;
