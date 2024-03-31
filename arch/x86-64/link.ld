@@ -12,16 +12,17 @@ pa_trampoline64 = ABSOLUTE(trampoline64 - offset);
 SECTIONS {
 	. = virt;
 	__kstart = .;
+	__ktext = .;
 
 	.text : AT(ADDR(.text) - offset) {
 		KEEP(*(.text.head))
 		KEEP(*(.text.boot))
-		*(.text)
 		. = ALIGN(4096);
 		__kinit = .;
 		*(.text.init)
 		. = ALIGN(4096);
 		__kinit_e = .;
+		*(.text)
 		*(.text.*)
 	}
 
@@ -34,7 +35,7 @@ SECTIONS {
 
 	. = ALIGN(4096);
 	.rodata : AT(ADDR(.rodata) - offset) {
-		__rodata_s = .;
+		__rodata = .;
 		*(.rodata .rodata.*)
 		__rodata_e = .;
 	}

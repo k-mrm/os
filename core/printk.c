@@ -43,19 +43,24 @@ sprintiu32(char *p, i32 num, int base, bool sign)
 	u32 unum;
 	uint n = 0;
 
-	if (sign && num < 0) {
+	if (sign && num < 0)
+	{
 		unum = (u32)(-(num + 1)) + 1;
 		neg = true;
-	} else {
+	}
+	else
+	{
 		unum = (u32)num;
 	}
 
-	do {
+	do
+	{
 		*--cur = "0123456789abcdef"[unum % base];
 		n++;
 	} while (unum /= base);
 
-	if (neg) {
+	if (neg)
+	{
 		*--cur = '-';
 		n++;
 	}
@@ -74,19 +79,24 @@ sprintiu64(char *p, i64 num, int base, bool sign)
 	u64 unum;
 	uint n = 0;
 
-	if (sign && num < 0) {
+	if (sign && num < 0)
+	{
 		unum = (u64)(-(num + 1)) + 1;
 		neg = true;
-	} else {
+	}
+	else
+	{
 		unum = (u64)num;
 	}
 
-	do {
+	do
+	{
 		*--cur = "0123456789abcdef"[unum % base];
 		n++;
 	} while (unum /= base);
 
-	if (neg) {
+	if (neg)
+	{
 		*--cur = '-';
 		n++;
 	}
@@ -102,12 +112,15 @@ vsprintk(char *buf, const char *fmt, va_list ap)
 	uint len;
 	char c;
 
-	for (int i = 0; fmt[i]; i++) {
+	for (int i = 0; fmt[i]; i++)
+	{
 		c = fmt[i];
-		if (c == '%') {
+		if (c == '%')
+		{
 			c = fmt[++i];
 
-			switch (c) {
+			switch (c)
+			{
 			case 'd':
 				len = sprintiu32(buf + n, va_arg(ap, i32), 10, true);
 				n += len;
@@ -150,7 +163,9 @@ vsprintk(char *buf, const char *fmt, va_list ap)
 				buf[n++] = c;
 				break;
 			}
-		} else {
+		}
+		else
+		{
 			buf[n++] = c;
 		}
 	}

@@ -44,6 +44,11 @@
 
 #ifndef __ASSEMBLER__
 
+extern char __kstart[], __kend[];
+extern char __ktext[], __ktext_e[];
+extern char __rodata[], __rodata_e[];
+extern char __kinit[], __kinit_e[];
+
 #include <akari/types.h>
 
 static inline bool
@@ -57,7 +62,7 @@ V2P(void *p)
 {
 	ulong va = (ulong)p;
 
-	return IsDmap((ulong)va) ? va - PAGE_OFFSET : va - KLINK_OFFSET;
+	return IsDmap(va) ? va - PAGE_OFFSET : va - KLINK_OFFSET;
 }
 
 static inline void *
@@ -65,6 +70,28 @@ P2V(PHYSADDR pa)
 {
 	return (void *)(pa + PAGE_OFFSET);
 }
+
+static inline void *
+P2K(PHYSADDR pa)
+{
+	return (void *)(pa + KLINK_OFFSET);
+}
+
+static inline void *
+KernelStart(void)
+{
+	return __kstart;
+}
+
+static inline void *
+KernelEnd(void)
+{
+	return __ktext_e;
+}
+
+#define IS_KERN_TEXT(addr)	((ulong)__ktext <= (addr) && (addr) < (ulong)__ktext_e)
+#define IS_KERN_RODATA(addr)	((ulong)__rodata <= (addr) && (addr) < (ulong)__rodata_e)
+#define IS_KINIT(addr)		((ulong)__kinit <= (addr) && (addr) < (ulong)__kinit_e)
 
 #endif	// __ASSEMBLER__
 

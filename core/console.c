@@ -29,6 +29,7 @@
 
 #include <akari/types.h>
 #include <akari/console.h>
+#include <akari/log.h>
 
 static CONSOLE *console = NULL;
 
@@ -50,5 +51,8 @@ ConsoleRegister(CONSOLE *cons)
 		rc = cons->Init(cons);
 
 	if (!rc)
+	{
 		console = cons;
+		printk("current console: %s\n", console->Name);
+	}
 }

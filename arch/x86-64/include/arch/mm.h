@@ -36,12 +36,34 @@
 #define KERNLINK	ULL(0xffffffff80100000)
 #define KERNLINK_PA	ULL(0x100000)
 
-#define PIDX(level, va)		(((va) >> (12 + ((level) - 1) * 9)) & 0x1ff)
+#define PTE_P		(1 << 0)
+#define PTE_W		(1 << 1)
+#define PTE_U		(1 << 2)
+
+/*
+ *  x86 48bit Virtual Address
+ *
+ *     48    39 38    30 29    21 20    12 11       0
+ *    +--------+--------+--------+--------+----------+
+ *    | level4 | level3 | level2 | level1 | page off |
+ *    +--------+--------+--------+--------+----------+
+ *       pml4     pdpt      pd       pt
+ *
+ */
+
+#define PIDX(level, addr)	(((addr) >> (12 + ((level) - 1) * 9)) & 0x1ff)
+
+#define	PAGESIZE	0x1000
+#define PAGESHIFT	12
 
 #ifndef __ASSEMBLER__
 
 #define	VA(pa)		((pa) + VA_OFFSET)
 #define	PA(va)		((va) - VA_OFFSET)
+
+#define PPresent(pte)	((pte) & PTE_P)
+#define PWritable(pte)	((pte) & PTE_W)
+#define PUser(pte)	((pte) & PTE_U)
 
 #endif	// __ASSEMBLER__
 

@@ -27,45 +27,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_ASM_H
-#define _X86_ASM_H
+#ifndef _LOG_H
+#define _LOG_H
 
-#ifdef __ASSEMBLER__
-#define UL(a)		a
-#define ULL(a)		a
-#else	// __ASSEMBLER__
-#define UL(a)		a##ul
-#define ULL(a)		a##ull
-#endif
+#include <akari/printk.h>
 
-#define CR0_PE		0x1
-#define CR0_PG		0x80000000
-#define CR4_PAE		(1 << 5)
+#ifndef KPREFIX
+#define KPREFIX
+#endif	// KPREFIX
 
-#define CPUID_EXT1_EDX_64BIT	0x20000000
+#define KDBG(fmt, ...)	printk(KPREFIX " [debug] " fmt, ##__VA_ARGS__)
+#define KLOG(fmt, ...)	printk(KPREFIX " " fmt, ##__VA_ARGS__)
 
-#ifndef __ASSEMBLER__
-
-#include <akari/types.h>
-
-#define	HLT	asm volatile ("hlt")
-
-static inline void
-outb(u16 port, u8 data)
-{
-	asm volatile ("outb %0, %1" :: "a"(data), "d"(port));
-}
-
-static inline u8
-inb(u16 port)
-{
-	u8 data;
-
-	asm volatile ("inb %1, %0" : "=a"(data) : "d"(port));
-
-	return data;
-}
-
-#endif	// __ASSEMBLER__
-
-#endif	// _X86_ASM_H
+#endif	// _LOG_H

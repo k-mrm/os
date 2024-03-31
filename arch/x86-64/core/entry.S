@@ -29,6 +29,7 @@
 
 #include <arch/asm.h>
 #include <arch/mm.h>
+#include "msr.h"
 
 #define MULTIBOOT2_MAGIC	0xe85250d6
 #define MULTIBOOT2_FLAGS	0		// 32bit i386
@@ -36,6 +37,7 @@
 #define CHECKSUM		0x100000000 - (MULTIBOOT2_MAGIC + MULTIBOOT2_FLAGS + MULTIBOOT2_LENGTH)
 
 #define pa(x)			(x - VA_OFFSET)
+#define va(x)			(x + VA_OFFSET)
 
 #define	SEG_CODE32		0x08
 #define	SEG_DATA32		0x10
@@ -82,9 +84,9 @@ entry32:
 	// init pgt
 	call	initpgt
 	// enable long mode
-	movl	$0xc0000080, %ecx
+	movl	$IA32_EFER, %ecx
 	rdmsr
-	orl	$EFER_LME, %eax
+	orl	$IA32_EFER_LME, %eax
 	wrmsr
 
 	lgdtl	pa(entrygdt_p)
@@ -212,6 +214,9 @@ entry64:
 	subl	%edi, %ecx
 	shrl	$2, %ecx
 	rep	stosl
+
+	movq	$va(0x7c00), %rax
+	movq	%rax, %rsp
 
 	movq	(multiboot_info), %rdi
 	addq	$VA_OFFSET, %rdi	

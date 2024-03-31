@@ -28,22 +28,41 @@
  */
 
 #include <akari/types.h>
-#include <akari/printk.h>
 #include <akari/sysmem.h>
 
-SYSMEM Sysmem;
+#define KPREFIX		"system memory:"
 
-void
-NewMemblock(PHYSADDR base, u64 size)
+#include <akari/log.h>
+
+SYSMEM Sysmem = {
+	.Avail.Name = "Available",
+	.Avail.nBlock = 0,
+	.Rsrv.Name = "Reserved",
+	.Rsrv.nBlock = 0,
+};
+
+static void
+MemAddBlock(MEMCHUNK *c, PHYSADDR base, ulong size)
 {
-	MEMBLOCK *m;
+	MEMBLOCK *block;
 	PHYSADDR end = base + size - 1;
 
-	m = &Sysmem.Mem[Sysmem.nEntry++];
+	block = &c->Block[c->nBlock++];
 
-	printk("memory [%p-%p] available\n", base, end);
+	KLOG("%s [%p-%p]\n", c->Name, base, end);
 
-	m->Base = base;
-	m->Size = size;
-	m->Flags = 0;
+	block->Base = base;
+	block->Size = size;
+}
+
+void
+NewMem(PHYSADDR base, ulong size)
+{
+	MemAddBlock(&Sysmem.Avail, base, size);
+}
+
+void
+ReserveMem(PHYSADDR base, ulong size)
+{
+	MemAddBlock(&Sysmem.Rsrv, base, size);
 }

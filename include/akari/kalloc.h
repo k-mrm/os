@@ -30,6 +30,74 @@
 #ifndef _KALLOC_H
 #define _KALLOC_H
 
-void KallocInit(void);
+#include <akari/types.h>
+#include <akari/compiler.h>
+#include <arch/mm.h>
+#include <arch/memlayout.h>
+
+typedef struct PAGE		PAGE;
+typedef struct PAGEBLOCK	PAGEBLOCK;
+
+struct PAGE
+{
+	u8 Blockno;
+};
+
+struct PAGEBLOCK
+{
+	PAGE *Pages;
+	PHYSADDR Base;
+	uint nPages;
+	u8 Node;	// NUMA Node
+};
+
+extern PAGEBLOCK PRoot[32];
+
+static inline PAGEBLOCK *
+Pa2Block(PHYSADDR pa)
+{
+	return NULL;
+}
+
+static inline PAGE *
+Pa2Page(PHYSADDR pa)
+{
+	PAGEBLOCK *block;
+
+	block = Pa2Block(pa);
+
+	return block->Pages + ((pa - block->Base) >> PAGESHIFT);
+}
+
+static inline PHYSADDR
+Page2Pa(PAGE *page)
+{
+	PAGEBLOCK *block;
+
+	block = &PRoot[page->Blockno];
+
+	return block->Base + ((page - block->Pages) << PAGESHIFT);
+}
+
+static inline PAGE *
+Va2Page(void *va)
+{
+	return Pa2Page(V2P(va));
+}
+
+static inline void *
+Page2Va(PAGE *page)
+{
+	return (void *)P2V(Page2Pa(page));
+}
+
+PAGE *Kpalloc(uint order);
+void Kpfree(PAGE *p, uint order);
+
+#define Kalloc()	Page2Va(Kpalloc(0))
+#define Kfree(addr)	Kpfree(Va2Page(addr), 0)
+
+void KallocInitEarly(ulong start, ulong end) INIT;
+void KallocInit(void) INIT;
 
 #endif	// _KALLOC_H

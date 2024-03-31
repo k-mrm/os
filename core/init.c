@@ -33,11 +33,19 @@
 #include <akari/kalloc.h>
 #include <akari/panic.h>
 
+#define KPREFIX	"init:"
+
+#include <akari/log.h>
+
 void NORETURN
 KernelMain(void)
 {
 	KallocInit();
 	TTYInit();
+
+#ifdef DBGHELLO
+	KDBG("Kernel Hello!\n");
+#endif	// DBGHELLO
 
 	panic("Kernelmain Exit!");
 }

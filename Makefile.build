@@ -1,3 +1,5 @@
+CONFIG ?= .config
+
 PREFIX = 
 CC = $(PREFIX)gcc
 AS = $(PREFIX)as
@@ -10,6 +12,8 @@ LDFLAGS := -g -nostdlib -nostartfiles -Wl,--build-id=none -static
 
 include $(CONFIG)
 include $(DIR)/Makefile
+
+CFLAGS += $(CONSTANTS-1)
 
 subout = $(subdirs-1:%=$(DIR)/%/output.o)
 subc = $(subdirs-1:%=$(DIR)/%/clean)
@@ -27,7 +31,7 @@ cleand: $(subc)
 	$(RM) $(obj) $(DIR)/output.o
 
 $(subout): 
-	$(MAKE) -f Makefile.build build DIR=$(@D)
+	$(MAKE) -f Makefile.build build DIR=$(@D) ARCH=$(ARCH)
 
 $(DIR)/output.o: $(objs)
 	@echo LD $@

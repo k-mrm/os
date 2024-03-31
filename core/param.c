@@ -29,7 +29,12 @@
 
 // Kernel Parameter
 
+#include <akari/compiler.h>
 #include <akari/param.h>
+
+#define KPREFIX	"param:"
+
+#include <akari/log.h>
 
 static const char *param;
 
@@ -37,4 +42,6 @@ void
 SetParam(const char *p)
 {
 	param = p;
+
+	KLOG("Kernel parameter: %s\n", p);
 }

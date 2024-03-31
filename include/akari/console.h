@@ -36,7 +36,7 @@ typedef struct CONSOLE	CONSOLE;
 
 struct CONSOLE
 {
-	const char *Name;
+	const char Name[16];
 	void *Priv;
 
 	int 	(*Init)(CONSOLE *);

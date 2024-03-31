@@ -27,8 +27,95 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Physical Memory Buddy Allocator for Kernel
+
 #include <akari/kalloc.h>
 #include <akari/sysmem.h>
+#include <akari/panic.h>
+
+#define KPREFIX		"kalloc:"
+
+#include <akari/log.h>
+
+PAGEBLOCK PRoot[32];
+static uint nPRoot;
+static ulong Earlystart, Earlyend;
+
+static PAGEBLOCK *
+NewPageBlock(void)
+{
+	if (nPRoot < 32)
+	{
+		return &PRoot[nPRoot++];
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+PAGE *
+Kpalloc(uint order)
+{
+	return NULL;
+}
+
+void
+Kpfree(PAGE *page, uint order)
+{
+	;
+}
+
+static uint
+EarlyFreeBlock(MEMBLOCK *block)
+{
+	PAGEBLOCK *pb;
+	PHYSADDR addr;
+	PHYSADDR bend = block->Base + block->Size;
+	uint np = 0;
+
+	pb = NewPageBlock();
+
+	if (!pb)
+	{
+		panic("null page block");
+	}
+
+	pb->Base = block->Base;
+	pb->nPages = block->Size >> PAGESHIFT;
+	// pb->Pages = ;
+	pb->Node = 0;
+
+	for (addr = block->Base; addr < bend; addr += PAGESIZE)
+	{
+
+		// np++;
+	}
+
+	return np;
+}
+
+void
+KallocInitEarly(ulong start, ulong end)
+{
+	MEMBLOCK *block;
+	uint npages = 0;
+
+	KDBG("initialize %p-%p\n", start, end);
+
+	Earlystart = start;
+	Earlyend = end;
+
+	FOREACH_SYSMEM_AVAIL_BLOCK (block)
+	{
+		npages += EarlyFreeBlock(block);
+	}
+
+	if (npages == 0)
+	{
+		panic("system has no memory!");
+	}
+}
 
 void
 KallocInit(void)

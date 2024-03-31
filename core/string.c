@@ -42,10 +42,13 @@ memmove(void *dst, const void *src, u64 n)
 	char *d = dst;
 	const char *s = src;
 
-	if (s > d) {
+	if (s > d)
+	{
 		while (n-- > 0)
 			*d++ = *s++;
-	} else {
+	}
+	else
+	{
 		d += n;
 		s += n;
 		while (n-- > 0)
@@ -80,7 +83,8 @@ strcpy(char *dst, const char *src)
 int
 strcmp(const char *s1, const char *s2)
 {
-	while (*s1 && *s1 == *s2) {
+	while (*s1 && *s1 == *s2)
+	{
 		s1++;
 		s2++;
 	}
@@ -91,7 +95,8 @@ strcmp(const char *s1, const char *s2)
 int
 strncmp(const char *s1, const char *s2, u64 len)
 {
-	while (*s1 && *s1 == *s2 && len > 0) {
+	while (*s1 && *s1 == *s2 && len > 0)
+	{
 		s1++;
 		s2++;
 		len--;

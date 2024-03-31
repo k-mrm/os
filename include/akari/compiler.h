@@ -41,6 +41,6 @@
 #define LIKELY(cond)	__builtin_expect(!!(cond), 1)
 #define UNLIKELY(cond)	__builtin_expect(!!(cond), 0)
 
-#define INIT		__section(".text.init")
+#define INIT		SECTION(".text.init")
 
 #endif	/* _COMPILER_H */

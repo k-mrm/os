@@ -29,37 +29,34 @@
 
 #include <akari/types.h>
 #include <akari/sysmem.h>
+#include <akari/compiler.h>
+#include <akari/mm.h>
 #include <arch/mm.h>
 #include <arch/memlayout.h>
 
 #include "mm.h"
 
-static PTE kpml4[512];
+/* Kernel Page Directory */
+static PTE kpml4[512] ALIGNED(PAGESIZE);
 
 extern PTE __boot_pml4[];
 extern PTE __boot_pdpt[];
 
-static void
-mappages(PAGETABLE pgt)
+void
+SwitchKva()
 {
 	;
 }
 
 void
-ROKernel()
+__InitKernelAs(VAS *vas)
 {
-	;
+	vas->pgdir = kpml4;
 }
 
-void
+void INIT
 KillIdmap(void)
 {
 	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
 	__boot_pdpt[PIDX(3, KERNLINK_PA)] = 0;
-}
-
-void
-KernelRemap(void)
-{
-	;
 }

@@ -33,23 +33,36 @@
 #include <akari/types.h>
 
 typedef struct MEMBLOCK		MEMBLOCK;
+typedef struct MEMCHUNK		MEMCHUNK;
 typedef struct SYSMEM		SYSMEM;
 
 struct MEMBLOCK
 {
 	PHYSADDR Base;
-	u64 Size;
-	u8 Flags;
+	ulong Size;
+};
+
+struct MEMCHUNK
+{
+	char *Name;
+	uint nBlock;
+	MEMBLOCK Block[32];
 };
 
 struct SYSMEM
 {
-	MEMBLOCK Mem[64];
-	int nEntry;
+	MEMCHUNK Avail;
+	MEMCHUNK Rsrv;
 };
 
 extern SYSMEM Sysmem;
 
-void NewMemblock(PHYSADDR base, u64 size);
+#define FOREACH_SYSMEM_AVAIL_BLOCK(block)	\
+	for (block = Sysmem.Avail.Block;	\
+	     block < &Sysmem.Avail.Block[Sysmem.Avail.nBlock];	\
+	     block++)
+
+void NewMem(PHYSADDR base, u64 size);
+void ReserveMem(PHYSADDR base, u64 size);
 
 #endif	// _SYSMEM_H

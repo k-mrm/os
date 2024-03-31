@@ -132,7 +132,7 @@ static CONSOLE console = {
 	.Priv = &com,
 	.Init = cominit,
 	.Write = comwrite,
-	.Read = NULL,
+	.Read = comread,
 };
 
 void

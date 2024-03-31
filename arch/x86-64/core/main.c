@@ -29,7 +29,6 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
-#include <akari/printk.h>
 #include <akari/panic.h>
 #include <akari/param.h>
 #include <akari/sysmem.h>
@@ -37,12 +36,20 @@
 #include <arch/asm.h>
 #include <arch/memlayout.h>
 
+#define KPREFIX	"x86-64/main:"
+
+#include <akari/log.h>
+
 #include "serial.h"
 #include "multiboot.h"
 #include "mm.h"
 
-static void
-ParseBoot(MULTIBOOT_INFO *mb)
+#define	KiB	(1024)
+#define	MiB	(1024 * 1024)
+#define	GiB	(1024 * 1024 * 1024)
+
+static void INIT
+ParseBootInfo(MULTIBOOT_INFO *mb)
 {
 	MULTIBOOT_TAG *tag;
 
@@ -60,14 +67,14 @@ ParseBoot(MULTIBOOT_INFO *mb)
 		case MULTIBOOT_TAG_TYPE_CMDLINE: {
 			MULTIBOOT_TAG_STRING *cmd =
 				(MULTIBOOT_TAG_STRING *)tag;
-			printk("cmdline: %s\n", cmd->String);
+			KDBG("cmdline: %s\n", cmd->String);
 			SetParam(cmd->String);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_BOOTDEV: {
 			MULTIBOOT_TAG_BOOTDEV *dev =
 				(MULTIBOOT_TAG_BOOTDEV *)tag;
-			printk("Boot dev: 0x%x\n", dev->BiosDev);
+			KDBG("Boot dev: 0x%x\n", dev->BiosDev);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_MMAP: {
@@ -79,11 +86,13 @@ ParseBoot(MULTIBOOT_INFO *mb)
 			     (char *)e < (char *)mmap + mmap->Size;
 			     e = (MULTIBOOT_MMAP_ENTRY *)((char *)e + mmap->EntrySize))
 			{
-				printk ("memory %p-%p type:%x\n", e->Addr, e->Addr+e->Len,
-							         e->Type);
 				if (e->Type == MULTIBOOT_MEMORY_AVAILABLE)
 				{
-					NewMemblock(e->Addr, e->Len);
+					NewMem(e->Addr, e->Len);
+				}
+				else if (e->Type == MULTIBOOT_MEMORY_RESERVED)
+				{
+					ReserveMem(e->Addr, e->Len);
 				}
 			}
 			break;	
@@ -95,16 +104,26 @@ ParseBoot(MULTIBOOT_INFO *mb)
 }
 
 // bsp main
-void NORETURN
+void NORETURN INIT
 kmain0(MULTIBOOT_INFO *mb)
 {
 	KillIdmap();
 
 	SerialInit();	// earlyconsole
 
-	printk("Booting %dbit Kernel...\n", 64);
+	KLOG("Booting %dbit Kernel...\n", 64);
 
-	ParseBoot(mb);
+	ParseBootInfo(mb);
+
+	/*
+	 * In x86-64, First 1MB is reserved
+	 */
+	ReserveMem(0x0, 0x100000);
+
+	/*
+	 * Kernel early mapping is 0-1GiB
+	 */
+	KallocInitEarly(0x0, 1 * GiB);
 	KernelRemap();
 
 	KernelMain();

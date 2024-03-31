@@ -27,45 +27,63 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_ASM_H
-#define _X86_ASM_H
-
-#ifdef __ASSEMBLER__
-#define UL(a)		a
-#define ULL(a)		a
-#else	// __ASSEMBLER__
-#define UL(a)		a##ul
-#define ULL(a)		a##ull
-#endif
-
-#define CR0_PE		0x1
-#define CR0_PG		0x80000000
-#define CR4_PAE		(1 << 5)
-
-#define CPUID_EXT1_EDX_64BIT	0x20000000
-
-#ifndef __ASSEMBLER__
-
 #include <akari/types.h>
+#include <akari/compiler.h>
+#include <akari/mm.h>
+#include <arch/mm.h>
+#include <arch/memlayout.h>
 
-#define	HLT	asm volatile ("hlt")
+/*
+ *  Kernel address space
+ */
+static VAS kernas;
 
-static inline void
-outb(u16 port, u8 data)
+void INIT
+ROKernel()
 {
-	asm volatile ("outb %0, %1" :: "a"(data), "d"(port));
+	;
 }
 
-static inline u8
-inb(u16 port)
+static PTE *
+PageWalk(VAS *vas, ulong va)
 {
-	u8 data;
-
-	asm volatile ("inb %1, %0" : "=a"(data) : "d"(port));
-
-	return data;
+	return NULL;
 }
 
-#endif	// __ASSEMBLER__
+static void
+mappages(VAS *vas, ulong va, PHYSADDR pa, ulong size, PAGEFLAGS flags)
+{
+	PTE *pte;
 
-#endif	// _X86_ASM_H
+	for (ulong p = 0; p < size; p += PAGESIZE, va += PAGESIZE, pa += PAGESIZE)
+	{
+		pte = PageWalk(vas, va);
+		if(PPresent(*pte))
+			panic("this entry has been used: va %p", va);
+
+		// SetPte(pte, pa, flags);
+	}
+}
+
+void
+Kpmap(void *va, PHYSADDR pa, PAGEFLAGS flags)
+{
+	mappages(&kernas, va, pa, PAGESIZE, flags);
+}
+
+void INIT
+KernelRemap(void)
+{
+	;
+}
+
+void INIT
+InitKernelAs(void)
+{
+	__InitKernelAs(&kernas);
+
+	if (!kernas.pgdir)
+	{
+		panic("NULL pgdir");
+	}
+}
