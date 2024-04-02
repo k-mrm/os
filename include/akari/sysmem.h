@@ -57,9 +57,19 @@ struct SYSMEM
 
 extern SYSMEM Sysmem;
 
+#define FOREACH_MEMCHUNK_BLOCK(chunk, idx, block)	\
+	for (block = (chunk)->Block, idx = 0;		\
+	     block < &(chunk)->Block[(chunk)->nBlock];	\
+	     block++, idx++)
+
 #define FOREACH_SYSMEM_AVAIL_BLOCK(block)	\
 	for (block = Sysmem.Avail.Block;	\
 	     block < &Sysmem.Avail.Block[Sysmem.Avail.nBlock];	\
+	     block++)
+
+#define FOREACH_SYSMEM_RSRV_BLOCK(block)	\
+	for (block = Sysmem.Rsrv.Block;		\
+	     block < &Sysmem.Rsrv.Block[Sysmem.Rsrv.nBlock];	\
 	     block++)
 
 void NewMem(PHYSADDR base, u64 size);

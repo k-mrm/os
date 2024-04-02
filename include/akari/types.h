@@ -61,4 +61,7 @@ typedef _Bool	bool;
   ({ const typeof(((st *)0)->m) *_mptr = (ptr); \
      (st *)((char *)_mptr - offsetof(st, m)); })
 
+#define MAX(a, b)	((a) < (b) ? (b) : (a))
+#define MIN(a, b)	((a) > (b) ? (b) : (a))
+
 #endif	// _TYPES_H

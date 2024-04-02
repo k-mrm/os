@@ -29,6 +29,12 @@
 
 #include <akari/types.h>
 #include <akari/sysmem.h>
+#include <akari/compiler.h>
+#include <akari/panic.h>
+#include <akari/mm.h>
+#include <akari/string.h>
+#include <arch/mm.h>
+#include <arch/memlayout.h>
 
 #define KPREFIX		"system memory:"
 
@@ -41,28 +47,262 @@ SYSMEM Sysmem = {
 	.Rsrv.nBlock = 0,
 };
 
+/*
+ * __MemblockOverlap
+ * true: overlapped
+ * false: ∅
+ */
+static bool
+__MemblockOverlap(PHYSADDR astart, PHYSADDR aend, PHYSADDR bstart, PHYSADDR bend,
+		  PHYSADDR *pstart, PHYSADDR *pend)
+{
+	PHYSADDR s, e;
+
+	s = MAX(astart, bstart);
+	e = MIN(aend, bend);
+
+	if (s < e)
+	{
+		if (pstart)
+		{
+			*pstart = s;
+		}
+		if (pend)
+		{
+			*pend = e;
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+static bool
+MemblockOverlap(MEMBLOCK *a, MEMBLOCK *b, PHYSADDR *pstart, PHYSADDR *pend)
+{
+	return __MemblockOverlap(a->Base, a->Base + a->Size, b->Base, b->Base + b->Size,
+				 pstart, pend);
+}
+
+static bool
+MemblockMerge(MEMBLOCK *a, MEMBLOCK *b, PHYSADDR *pstart, PHYSADDR *pend)
+{
+	PHYSADDR s, e;
+
+	if (!MemblockOverlap(a, b, NULL, NULL))
+	{
+		return false;
+	}
+
+	s = MIN(a->Base, b->Base);
+	e = MAX(a->Base + a->Size, b->Base + b->Size);
+
+	if (pstart)
+	{
+		*pstart = s;
+	}
+	if (pend)
+	{
+		*pend = e;
+	}
+
+	return true;
+}
+
+/*
+ * BootmemFind
+ * true: found memory, start physaddr is @pa
+ * false: memory is not found
+ */
+static bool INIT
+BootmemFind(uint nbytes, uint align, PHYSADDR *pa)
+{
+	MEMBLOCK *ab, *rb;
+	PHYSADDR start, end;	/* [start, end) */
+	PHYSADDR rstart, rend;	/* [rstart, rend) */
+	PHYSADDR ms, me;
+	bool overlap;
+
+	FOREACH_SYSMEM_AVAIL_BLOCK (ab)
+	{
+		start = ab->Base;
+		end = ab->Base + ab->Size;
+
+		for (uint i = 0; i < Sysmem.Rsrv.nBlock + 1; i++)
+		{
+			rb = Sysmem.Rsrv.Block + i;
+
+			if (i)
+			{
+				rstart = rb[-1].Base + rb[-1].Size;
+			}
+			else
+			{
+				rstart = 0x0;
+			}
+
+			if (i == Sysmem.Rsrv.nBlock)
+			{
+				rend = (PHYSADDR)-1ll;
+			}
+			else
+			{
+				rend = rb->Base;
+			}
+			
+			overlap = __MemblockOverlap(start, end, rstart, rend, &ms, &me);
+			if (overlap)
+			{
+				ms = ALIGN(ms, align);
+				if (me - ms >= nbytes)
+				{
+					*pa = ms;
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+void * INIT
+BootmemAlloc(uint nbytes, uint align)
+{
+	PHYSADDR pa;
+	void *va;
+
+	if (nbytes == 0)
+	{
+		return NULL;
+	}
+	if (!BootmemFind(nbytes, align, &pa))
+	{
+		return NULL;
+	}
+
+	ReserveMem(pa, nbytes);
+
+	KDBG("alloc bootmem: %p-%p\n", pa, pa + nbytes - 1);
+
+	va = P2V(pa);
+	memset(va, 0, nbytes);
+
+	return va;
+}
+
+static void DEBUG
+MemchunkDump(MEMCHUNK *c)
+{
+	MEMBLOCK *b;
+	uint i;
+
+	KDBG("memchunk %s:\n", c->Name);
+	FOREACH_MEMCHUNK_BLOCK (c, i, b)
+	{
+		KDBG("\t[%p-%p]\n", b->Base, b->Base + b->Size - 1);
+	}
+}
+
+static void DEBUG
+SysmemDump(void)
+{
+	MemchunkDump(&Sysmem.Avail);
+	MemchunkDump(&Sysmem.Rsrv);
+}
+
 static void
-MemAddBlock(MEMCHUNK *c, PHYSADDR base, ulong size)
+MemRemoveBlock(MEMCHUNK *c, uint idx)
+{
+	if (idx >= c->nBlock)
+	{
+		return;
+	}
+
+	memmove(c->Block + idx, c->Block + idx + 1, (c->nBlock - idx - 1) * sizeof(MEMBLOCK));
+	c->nBlock--;
+}
+
+static void
+MemInsertBlock(MEMCHUNK *c, uint idx, PHYSADDR start, ulong size)
 {
 	MEMBLOCK *block;
-	PHYSADDR end = base + size - 1;
 
-	block = &c->Block[c->nBlock++];
+	if (c->nBlock >= 32)
+	{
+		panic("nBlock > 32");
+	}
 
-	KLOG("%s [%p-%p]\n", c->Name, base, end);
+	memmove(c->Block + idx + 1, c->Block + idx, (c->nBlock - idx) * sizeof(MEMBLOCK));
 
-	block->Base = base;
+	block = &c->Block[idx];
+	block->Base = start;
 	block->Size = size;
+
+	c->nBlock++;
+
+	MemchunkDump(c);
+}
+
+static void
+MemchunkMerge(MEMCHUNK *c)
+{
+	MEMBLOCK *block, *next;
+	PHYSADDR start, end;
+	bool mergeable;
+
+	for (int i = 0; i < c->nBlock - 1; )
+	{
+		block = c->Block + i;
+		next = c->Block + i + 1;
+
+		mergeable = MemblockMerge(block, next, &start, &end);
+
+		if (mergeable)
+		{
+			MemRemoveBlock(c, i);
+			block->Base = start;
+			block->Size = end - start;
+			continue;
+		}
+
+		i++;
+	}
+
+	MemchunkDump(c);
+}
+
+static void
+MemNewBlock(MEMCHUNK *c, PHYSADDR start, ulong size)
+{
+	MEMBLOCK *block;
+	PHYSADDR end = start + size;
+	uint idx = 0;
+
+	KLOG("%s [%p-%p]\n", c->Name, start, end);
+
+	FOREACH_MEMCHUNK_BLOCK (c, idx, block)
+	{
+		if (start <= block->Base)
+		{
+			break;
+		}
+	}
+
+	MemInsertBlock(c, idx, start, size);
+	MemchunkMerge(c);
 }
 
 void
 NewMem(PHYSADDR base, ulong size)
 {
-	MemAddBlock(&Sysmem.Avail, base, size);
+	MemNewBlock(&Sysmem.Avail, base, size);
 }
 
 void
 ReserveMem(PHYSADDR base, ulong size)
 {
-	MemAddBlock(&Sysmem.Rsrv, base, size);
+	MemNewBlock(&Sysmem.Rsrv, base, size);
 }

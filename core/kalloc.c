@@ -29,8 +29,11 @@
 
 // Physical Memory Buddy Allocator for Kernel
 
+#include <akari/types.h>
+#include <akari/compiler.h>
 #include <akari/kalloc.h>
 #include <akari/sysmem.h>
+#include <akari/mm.h>
 #include <akari/panic.h>
 
 #define KPREFIX		"kalloc:"
@@ -71,28 +74,26 @@ EarlyFreeBlock(MEMBLOCK *block)
 {
 	PAGEBLOCK *pb;
 	PHYSADDR addr;
-	PHYSADDR bend = block->Base + block->Size;
-	uint np = 0;
+	PHYSADDR bend = PAGEALIGNDOWN(block->Base + block->Size);
 
 	pb = NewPageBlock();
-
 	if (!pb)
 	{
 		panic("null page block");
 	}
 
-	pb->Base = block->Base;
-	pb->nPages = block->Size >> PAGESHIFT;
-	// pb->Pages = ;
+	pb->Base = PAGEALIGN(block->Base);
+	pb->nPages = (bend - pb->Base) >> PAGESHIFT;
+	// pb->Pages = BootmemAlloc(pb->nPages * sizeof(PAGE), sizeof(PAGE));
 	pb->Node = 0;
 
-	for (addr = block->Base; addr < bend; addr += PAGESIZE)
+	for (addr = pb->Base; addr < bend; addr += PAGESIZE)
 	{
-
-		// np++;
+		;
+		return 0;
 	}
 
-	return np;
+	return pb->nPages;
 }
 
 void

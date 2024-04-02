@@ -31,6 +31,7 @@
 #define _COMPILER_H
 
 #define UNUSED		__attribute__((unused))
+#define DEBUG		__attribute__((unused))
 #define FALLTHROUGH	__attribute__((fallthrough))
 #define PACKED		__attribute__((packed))
 #define ALIGNED(n)	__attribute__((aligned(n)))

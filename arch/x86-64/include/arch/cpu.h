@@ -31,6 +31,5 @@
 #define _ARCH_CPU_H
 
 #include <akari/types.h>
-#include <arch/cpu.h>
 
 #endif	// _ARCH_CPU_H

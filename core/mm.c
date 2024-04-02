@@ -30,6 +30,7 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 #include <akari/mm.h>
+#include <akari/panic.h>
 #include <arch/mm.h>
 #include <arch/memlayout.h>
 
