@@ -55,6 +55,9 @@ struct PAGEBLOCK
 extern PAGEBLOCK PRoot[32];
 extern uint nPRoot;
 
+#define FOREACH_PAGEBLOCK(_pb)	\
+	for (_pb = PRoot; _pb < &PRoot[nPRoot]; _pb++)
+
 // FIXME: naive
 static inline PAGEBLOCK *
 Pa2Block(PHYSADDR pa)
@@ -62,7 +65,7 @@ Pa2Block(PHYSADDR pa)
 	PAGEBLOCK *b;
 	ulong size;
 
-	for (b = PRoot; b < &PRoot[nPRoot]; b++)
+	FOREACH_PAGEBLOCK (b)
 	{
 		size = b->nPages << PAGESHIFT;
 		if (b->Base <= pa && pa < b->Base + size)
@@ -106,14 +109,14 @@ Page2Va(PAGE *page)
 	return (void *)P2V(Page2Pa(page));
 }
 
-PAGE *Kpalloc(uint order);
-void Kpfree(PAGE *p, uint order);
+PAGE *AllocPages(uint order);
+void FreePages(PAGE *page, uint order);
 
-#define Kalloc()	Page2Va(Kpalloc(0))
-#define Kfree(addr)	Kpfree(Va2Page(addr), 0)
+#define Alloc()			Page2Va(AllocPages(0))
+#define Free(_addr)		FreePages(Va2Page(_addr), 0)
 
-#define PA2PFN(pa)		((pa) >> PAGESHIFT)
-#define PFN2PA(pfn)		((pfn) << PAGESHIFT)
+#define PA2PFN(_pa)		((_pa) >> PAGESHIFT)
+#define PFN2PA(_pfn)		((_pfn) << PAGESHIFT)
 
 void KallocInitEarly(ulong start, ulong end) INIT;
 void KallocInit(void) INIT;
