@@ -32,10 +32,6 @@
 
 #include <arch/asm.h>
 
-#define VA_OFFSET	ULL(0xffffffff80000000)
-#define KERNLINK	ULL(0xffffffff80100000)
-#define KERNLINK_PA	ULL(0x100000)
-
 #define PTE_P		(1 << 0)
 #define PTE_W		(1 << 1)
 #define PTE_U		(1 << 2)
@@ -57,9 +53,6 @@
 #define PAGESHIFT	12
 
 #ifndef __ASSEMBLER__
-
-#define	VA(pa)		((pa) + VA_OFFSET)
-#define	PA(va)		((va) - VA_OFFSET)
 
 #define PPresent(pte)	((pte) & PTE_P)
 #define PWritable(pte)	((pte) & PTE_W)

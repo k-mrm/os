@@ -2,7 +2,7 @@ OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64", "elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
 ENTRY(entry32)
 
-virt = 0xffffffff80100000;
+virt = 0xffff800000100000;
 phys = 0x100000;
 offset = virt - phys;
 

@@ -29,6 +29,7 @@
 
 #include <arch/asm.h>
 #include <arch/mm.h>
+#include <arch/memlayout.h>
 #include "msr.h"
 
 #define MULTIBOOT2_MAGIC	0xe85250d6
@@ -36,8 +37,8 @@
 #define MULTIBOOT2_LENGTH	(header_end - multiboot_header)
 #define CHECKSUM		0x100000000 - (MULTIBOOT2_MAGIC + MULTIBOOT2_FLAGS + MULTIBOOT2_LENGTH)
 
-#define pa(x)			(x - VA_OFFSET)
-#define va(x)			(x + VA_OFFSET)
+#define pa(x)			(x - PAGE_OFFSET)
+#define va(x)			(x + PAGE_OFFSET)
 
 #define	SEG_CODE32		0x08
 #define	SEG_DATA32		0x10
@@ -218,9 +219,11 @@ entry64:
 	movq	$va(0x7c00), %rax
 	movq	%rax, %rsp
 
-	movq	(multiboot_info), %rdi
-	addq	$VA_OFFSET, %rdi	
-	call	kmain0
+	movabs	$multiboot_info, %rax
+	movq	(%rax), %rdi
+	movabs	$(PAGE_OFFSET), %rax
+	addq	%rax, %rdi
+	call	x86Main
 
 	// never return here!
 	cli

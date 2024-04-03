@@ -31,6 +31,7 @@
 #define _SYSMEM_H
 
 #include <akari/types.h>
+#include <akari/compiler.h>
 
 typedef struct MEMBLOCK		MEMBLOCK;
 typedef struct MEMCHUNK		MEMCHUNK;
@@ -74,5 +75,6 @@ extern SYSMEM Sysmem;
 
 void NewMem(PHYSADDR base, u64 size);
 void ReserveMem(PHYSADDR base, u64 size);
+void *BootmemAlloc(uint nbytes, uint align) INIT;
 
 #endif	// _SYSMEM_H

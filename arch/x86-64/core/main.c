@@ -44,10 +44,6 @@
 #include "multiboot.h"
 #include "mm.h"
 
-#define	KiB	(1024)
-#define	MiB	(1024 * 1024)
-#define	GiB	(1024 * 1024 * 1024)
-
 static void INIT
 ParseBootInfo(MULTIBOOT_INFO *mb)
 {
@@ -105,7 +101,7 @@ ParseBootInfo(MULTIBOOT_INFO *mb)
 
 // bsp main
 void NORETURN INIT
-kmain0(MULTIBOOT_INFO *mb)
+x86Main(MULTIBOOT_INFO *mb)
 {
 	KillIdmap();
 
@@ -119,12 +115,6 @@ kmain0(MULTIBOOT_INFO *mb)
 	 * In x86-64, First 1MB is reserved
 	 */
 	ReserveMem(0x0, 0x100000);
-
-	/*
-	 * Kernel early mapping is 0-1GiB
-	 */
-	KallocInitEarly(0x0, 1 * GiB);
-	KernelRemap();
 
 	KernelMain();
 }

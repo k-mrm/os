@@ -14,7 +14,7 @@ iso = $(NAME).iso
 map = $(NAME).map
 
 NCPU ?= 1
-MEMSZ ?= 1024
+MEMSZ ?= 512
 
 arch-$(CONFIG_X86_64) := x86-64
 arch-$(CONFIG_AARCH64) := aarch64

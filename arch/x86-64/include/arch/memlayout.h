@@ -32,15 +32,13 @@
 
 #include <arch/asm.h>
 
-// Direct mapping offset
-#define DMAP_BASE	ULL(0xffff800000000000)
-#define DMAP_END	ULL(0xffffc00000000000)
+// Direct mapping offset: 0xffff800000000000 - 0xffffc00000000000
 
-#define PAGE_OFFSET	DMAP_BASE
-
-#define KLINK_OFFSET	ULL(0xffffffff80000000)
-#define KERNLINK	ULL(0xffffffff80100000)
+#define KLINK_OFFSET	ULL(0xffff800000000000)
+#define KERNLINK	ULL(0xffff800000100000)
 #define KERNLINK_PA	ULL(0x100000)
+
+#define PAGE_OFFSET	KLINK_OFFSET
 
 #ifndef __ASSEMBLER__
 
@@ -51,30 +49,18 @@ extern char __kinit[], __kinit_e[];
 
 #include <akari/types.h>
 
-static inline bool
-IsDmap(ulong addr)
-{
-	return DMAP_BASE <= addr && addr < DMAP_END;
-}
-
 static inline PHYSADDR
 V2P(void *p)
 {
 	ulong va = (ulong)p;
 
-	return IsDmap(va) ? va - PAGE_OFFSET : va - KLINK_OFFSET;
+	return va - PAGE_OFFSET;
 }
 
 static inline void *
 P2V(PHYSADDR pa)
 {
 	return (void *)(pa + PAGE_OFFSET);
-}
-
-static inline void *
-P2K(PHYSADDR pa)
-{
-	return (void *)(pa + KLINK_OFFSET);
 }
 
 static inline void *
@@ -86,7 +72,7 @@ KernelStart(void)
 static inline void *
 KernelEnd(void)
 {
-	return __ktext_e;
+	return __kend;
 }
 
 #define IS_KERN_TEXT(addr)	((ulong)__ktext <= (addr) && (addr) < (ulong)__ktext_e)

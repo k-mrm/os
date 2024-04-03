@@ -40,6 +40,7 @@ typedef struct PAGEBLOCK	PAGEBLOCK;
 
 struct PAGE
 {
+	PAGE *Next;
 	u8 Blockno;
 };
 
@@ -47,15 +48,29 @@ struct PAGEBLOCK
 {
 	PAGE *Pages;
 	PHYSADDR Base;
-	uint nPages;
+	ulong nPages;
 	u8 Node;	// NUMA Node
 };
 
 extern PAGEBLOCK PRoot[32];
+extern uint nPRoot;
 
+// FIXME: naive
 static inline PAGEBLOCK *
 Pa2Block(PHYSADDR pa)
 {
+	PAGEBLOCK *b;
+	ulong size;
+
+	for (b = PRoot; b < &PRoot[nPRoot]; b++)
+	{
+		size = b->nPages << PAGESHIFT;
+		if (b->Base <= pa && pa < b->Base + size)
+		{
+			return b;
+		}
+	}
+
 	return NULL;
 }
 
@@ -96,6 +111,9 @@ void Kpfree(PAGE *p, uint order);
 
 #define Kalloc()	Page2Va(Kpalloc(0))
 #define Kfree(addr)	Kpfree(Va2Page(addr), 0)
+
+#define PA2PFN(pa)		((pa) >> PAGESHIFT)
+#define PFN2PA(pfn)		((pfn) << PAGESHIFT)
 
 void KallocInitEarly(ulong start, ulong end) INIT;
 void KallocInit(void) INIT;

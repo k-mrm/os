@@ -31,6 +31,7 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <akari/string.h>
 #include <akari/kalloc.h>
 #include <akari/sysmem.h>
 #include <akari/mm.h>
@@ -40,21 +41,93 @@
 
 #include <akari/log.h>
 
+#define MAX_ORDER	10	
+
+typedef struct FREECHUNK	FREECHUNK;
+typedef struct KALLOCBLOCK	KALLOCBLOCK;
+
 PAGEBLOCK PRoot[32];
-static uint nPRoot;
+uint nPRoot;
+
 static ulong Earlystart, Earlyend;
 
+struct FREECHUNK
+{
+	PAGE *Freelist;
+	uint nFree;
+};
+
+struct KALLOCBLOCK
+{
+	// SPINLOCK;
+	FREECHUNK Chunk[MAX_ORDER+1];
+};
+
+static KALLOCBLOCK kblock;
+
 static PAGEBLOCK *
-NewPageBlock(void)
+NewPageBlock(uint *idx)
 {
 	if (nPRoot < 32)
 	{
+		*idx = nPRoot;
 		return &PRoot[nPRoot++];
 	}
 	else
 	{
 		return NULL;
 	}
+}
+
+static void DEBUG
+KallocDump(void)
+{
+	FREECHUNK *c;
+	ulong nbytes = 0;
+
+	for (uint order = 0; order < MAX_ORDER + 1; order++)
+	{
+		c = kblock.Chunk + order;
+
+		KDBG("%d bytes page(order%d): %d Pages\n", PAGESIZE * (1 << order), order, c->nFree);
+		nbytes += PAGESIZE * (1 << order) * c->nFree;
+	}
+
+	KDBG("Total: %d Bytes\n", nbytes);
+}
+
+static PAGE *
+ChunkDeletePa(FREECHUNK *chunk, PHYSADDR pa)
+{
+	PAGE *prev = NULL;
+
+	for (PAGE *p = chunk->Freelist; p; prev = p, p = p->Next)
+	{
+		if (Page2Pa(p) == pa)
+		{
+			chunk->nFree--;
+
+			if (prev)
+			{
+				prev->Next = p->Next;
+			}
+			else
+			{
+				chunk->Freelist = p->Next;
+			}
+			return p;
+		}
+	}
+
+	return NULL;
+}
+
+static void
+ChunkAddPage(FREECHUNK *chunk, PAGE *page)
+{
+	page->Next = chunk->Freelist;
+	chunk->Freelist = page;
+	chunk->nFree++;
 }
 
 PAGE *
@@ -69,14 +142,54 @@ Kpfree(PAGE *page, uint order)
 	;
 }
 
+#define BUDDY(pfn, order)	((pfn) ^ (1 << (order)))
+
+static void
+MergePage(KALLOCBLOCK *kb, PAGE *page, uint order)
+{
+	FREECHUNK *chunk;
+	ulong pfn, buddypfn;
+	PAGE *buddy;
+	PAGE *p0;
+
+	if (order > MAX_ORDER)
+	{
+		return;
+	}
+
+	chunk = kb->Chunk + order;
+
+	pfn = PA2PFN(Page2Pa(page));
+	buddypfn = BUDDY(pfn, order);
+
+	if (order != MAX_ORDER &&
+	    (buddy = ChunkDeletePa(chunk, PFN2PA(buddypfn))) != NULL)
+	{
+		// mergeable page
+		p0 = pfn < buddypfn ? page : buddy;
+		MergePage(kb, p0, order + 1);
+	}
+	else
+	{
+		ChunkAddPage(chunk, page);
+	}
+}
+
+static void
+FreePages(PAGE *page, uint order)
+{
+	MergePage(&kblock, page, order);
+}
+
 static uint
 EarlyFreeBlock(MEMBLOCK *block)
 {
 	PAGEBLOCK *pb;
-	PHYSADDR addr;
+	PAGE *page;
 	PHYSADDR bend = PAGEALIGNDOWN(block->Base + block->Size);
+	uint i = 0, bno = 0;
 
-	pb = NewPageBlock();
+	pb = NewPageBlock(&bno);
 	if (!pb)
 	{
 		panic("null page block");
@@ -84,25 +197,35 @@ EarlyFreeBlock(MEMBLOCK *block)
 
 	pb->Base = PAGEALIGN(block->Base);
 	pb->nPages = (bend - pb->Base) >> PAGESHIFT;
-	// pb->Pages = BootmemAlloc(pb->nPages * sizeof(PAGE), sizeof(PAGE));
+	pb->Pages = BootmemAlloc(pb->nPages * sizeof(PAGE), sizeof(PAGE));
 	pb->Node = 0;
 
-	for (addr = pb->Base; addr < bend; addr += PAGESIZE)
+	KDBG("early free block: %p-%p %d bytes\n", pb->Base, bend, bend - pb->Base);
+
+	if (!pb->Pages)
 	{
-		;
 		return 0;
+	}
+
+	for (PHYSADDR addr = pb->Base; addr < bend; addr += PAGESIZE, i++)
+	{
+		page = pb->Pages + i;
+		page->Blockno = bno;
+		FreePages(page, 0);
 	}
 
 	return pb->nPages;
 }
 
-void
+void INIT
 KallocInitEarly(ulong start, ulong end)
 {
 	MEMBLOCK *block;
 	uint npages = 0;
 
 	KDBG("initialize %p-%p\n", start, end);
+
+	memset(&kblock, 0, sizeof kblock);
 
 	Earlystart = start;
 	Earlyend = end;
@@ -111,6 +234,8 @@ KallocInitEarly(ulong start, ulong end)
 	{
 		npages += EarlyFreeBlock(block);
 	}
+
+	KallocDump();
 
 	if (npages == 0)
 	{

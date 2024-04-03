@@ -64,4 +64,8 @@ typedef _Bool	bool;
 #define MAX(a, b)	((a) < (b) ? (b) : (a))
 #define MIN(a, b)	((a) > (b) ? (b) : (a))
 
+#define	KiB	(1024)
+#define	MiB	(1024 * 1024)
+#define	GiB	(1024 * 1024 * 1024)
+
 #endif	// _TYPES_H

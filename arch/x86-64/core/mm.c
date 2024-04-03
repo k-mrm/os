@@ -58,5 +58,4 @@ void INIT
 KillIdmap(void)
 {
 	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
-	__boot_pdpt[PIDX(3, KERNLINK_PA)] = 0;
 }

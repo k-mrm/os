@@ -185,7 +185,7 @@ BootmemAlloc(uint nbytes, uint align)
 
 	ReserveMem(pa, nbytes);
 
-	KDBG("alloc bootmem: %p-%p\n", pa, pa + nbytes - 1);
+	KDBG("alloc bootmem %p bytes: %p-%p %p\n", nbytes, pa, pa + nbytes - 1, P2V(pa));
 
 	va = P2V(pa);
 	memset(va, 0, nbytes);
@@ -242,8 +242,6 @@ MemInsertBlock(MEMCHUNK *c, uint idx, PHYSADDR start, ulong size)
 	block->Size = size;
 
 	c->nBlock++;
-
-	MemchunkDump(c);
 }
 
 static void
@@ -271,17 +269,16 @@ MemchunkMerge(MEMCHUNK *c)
 		i++;
 	}
 
-	MemchunkDump(c);
+	// MemchunkDump(c);
 }
 
 static void
 MemNewBlock(MEMCHUNK *c, PHYSADDR start, ulong size)
 {
 	MEMBLOCK *block;
-	PHYSADDR end = start + size;
 	uint idx = 0;
 
-	KLOG("%s [%p-%p]\n", c->Name, start, end);
+	KLOG("%s [%p-%p]\n", c->Name, start, start + size - 1);
 
 	FOREACH_MEMCHUNK_BLOCK (c, idx, block)
 	{

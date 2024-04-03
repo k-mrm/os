@@ -32,14 +32,40 @@
 #include <akari/init.h>
 #include <akari/kalloc.h>
 #include <akari/panic.h>
+#include <akari/mm.h>
+#include <arch/memlayout.h>
 
 #define KPREFIX	"init:"
 
 #include <akari/log.h>
 
-void NORETURN
+void INIT
+ReserveKernelArea(void)
+{
+	PHYSADDR kstartpa, kendpa;
+	ulong ksize;
+
+	kstartpa = V2P(KernelStart());
+	kendpa = V2P(KernelEnd());
+	ksize = PAGEALIGN(kendpa - kstartpa);
+
+	KDBG("kernel image @%p-%p\n", kstartpa, kendpa);
+
+	ReserveMem(kstartpa, ksize);
+}
+
+void INIT NORETURN
 KernelMain(void)
 {
+	ReserveKernelArea();
+
+	/*
+	 * Kernel early mapping is 0-1GiB
+	 */
+	KallocInitEarly(0x0, 1 * GiB);
+
+	KernelRemap();
+
 	KallocInit();
 	TTYInit();
 
