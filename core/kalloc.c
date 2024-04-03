@@ -211,7 +211,11 @@ EarlyFreeBlock(MEMBLOCK *block)
 	{
 		page = pb->Pages + i;
 		page->Blockno = bno;
-		FreePages(page, 0);
+		// FIXME: naive
+		if (!ReservedAddr(addr))
+		{
+			FreePages(page, 0);
+		}
 	}
 
 	return pb->nPages;

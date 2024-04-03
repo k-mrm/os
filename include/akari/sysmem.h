@@ -77,4 +77,6 @@ void NewMem(PHYSADDR base, u64 size);
 void ReserveMem(PHYSADDR base, u64 size);
 void *BootmemAlloc(uint nbytes, uint align) INIT;
 
+bool ReservedAddr(PHYSADDR addr);
+
 #endif	// _SYSMEM_H

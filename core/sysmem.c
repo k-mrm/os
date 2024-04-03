@@ -244,6 +244,27 @@ MemInsertBlock(MEMCHUNK *c, uint idx, PHYSADDR start, ulong size)
 	c->nBlock++;
 }
 
+static bool
+MemchunkIn(MEMCHUNK *c, PHYSADDR pa)
+{
+	MEMBLOCK *block;
+	uint idx;
+
+	FOREACH_MEMCHUNK_BLOCK (c, idx, block)
+	{
+		if (pa < block->Base)
+		{
+			return false;
+		}
+		else if (block->Base <= pa && pa < block->Base + block->Size)
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 static void
 MemchunkMerge(MEMCHUNK *c)
 {
@@ -290,6 +311,12 @@ MemNewBlock(MEMCHUNK *c, PHYSADDR start, ulong size)
 
 	MemInsertBlock(c, idx, start, size);
 	MemchunkMerge(c);
+}
+
+bool
+ReservedAddr(PHYSADDR addr)
+{
+	return MemchunkIn(&Sysmem.Rsrv, addr);
 }
 
 void
