@@ -43,6 +43,7 @@
 #include "serial.h"
 #include "multiboot.h"
 #include "mm.h"
+#include "trap.h"
 
 static void INIT
 ParseBootInfo(MULTIBOOT_INFO *mb)
@@ -103,6 +104,7 @@ static void INIT
 X86_64Init(void)
 {
 	X86mmInit();
+	TrapInit();
 }
 
 // bsp main

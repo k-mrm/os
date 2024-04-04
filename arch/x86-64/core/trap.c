@@ -29,21 +29,25 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <arch/memlayout.h>
 
+#include "mm.h"
 #include "trap.h"
 
-asm (
-	".globl AllVectors \n"
-	"AllVectors: \n"
-);
+#include <akari/log.h>
+
+static GATEDESC idt[NR_INTERRUPT];
+
+extern ulong AllVectors[];
 
 // __vector0xnn_()
 #define VECTOR(_n)	\
 	void __vector ## _n ## _(void);	\
 	asm (	\
-		"__vector" #_n "_:\n"	\
+		".align 4 \n"		\
+		"__vector" #_n "_: \n"	\
 		"	push $" #_n "\n"	\
-		" 	jmp TrapHandler\n"	\
+		" 	jmp TrapHandler \n"	\
 	)
 
 VECTOR(0x00); VECTOR(0x01); VECTOR(0x02); VECTOR(0x03);
@@ -113,8 +117,132 @@ VECTOR(0xfc); VECTOR(0xfd); VECTOR(0xfe); VECTOR(0xff);
 
 #undef VECTOR
 
+// make vector table
+
+asm (
+	".data \n"
+	"AllVectors: \n"
+);
+
+#define VENTRY(_n)	\
+	asm (".quad __vector" #_n "_ \n")
+
+VENTRY(0x00); VENTRY(0x01); VENTRY(0x02); VENTRY(0x03);
+VENTRY(0x04); VENTRY(0x05); VENTRY(0x06); VENTRY(0x07);
+VENTRY(0x08); VENTRY(0x09); VENTRY(0x0a); VENTRY(0x0b);
+VENTRY(0x0c); VENTRY(0x0d); VENTRY(0x0e); VENTRY(0x0f);
+VENTRY(0x10); VENTRY(0x11); VENTRY(0x12); VENTRY(0x13);
+VENTRY(0x14); VENTRY(0x15); VENTRY(0x16); VENTRY(0x17);
+VENTRY(0x18); VENTRY(0x19); VENTRY(0x1a); VENTRY(0x1b);
+VENTRY(0x1c); VENTRY(0x1d); VENTRY(0x1e); VENTRY(0x1f);
+VENTRY(0x20); VENTRY(0x21); VENTRY(0x22); VENTRY(0x23);
+VENTRY(0x24); VENTRY(0x25); VENTRY(0x26); VENTRY(0x27);
+VENTRY(0x28); VENTRY(0x29); VENTRY(0x2a); VENTRY(0x2b);
+VENTRY(0x2c); VENTRY(0x2d); VENTRY(0x2e); VENTRY(0x2f);
+VENTRY(0x30); VENTRY(0x31); VENTRY(0x32); VENTRY(0x33);
+VENTRY(0x34); VENTRY(0x35); VENTRY(0x36); VENTRY(0x37);
+VENTRY(0x38); VENTRY(0x39); VENTRY(0x3a); VENTRY(0x3b);
+VENTRY(0x3c); VENTRY(0x3d); VENTRY(0x3e); VENTRY(0x3f);
+VENTRY(0x40); VENTRY(0x41); VENTRY(0x42); VENTRY(0x43);
+VENTRY(0x44); VENTRY(0x45); VENTRY(0x46); VENTRY(0x47);
+VENTRY(0x48); VENTRY(0x49); VENTRY(0x4a); VENTRY(0x4b);
+VENTRY(0x4c); VENTRY(0x4d); VENTRY(0x4e); VENTRY(0x4f);
+VENTRY(0x50); VENTRY(0x51); VENTRY(0x52); VENTRY(0x53);
+VENTRY(0x54); VENTRY(0x55); VENTRY(0x56); VENTRY(0x57);
+VENTRY(0x58); VENTRY(0x59); VENTRY(0x5a); VENTRY(0x5b);
+VENTRY(0x5c); VENTRY(0x5d); VENTRY(0x5e); VENTRY(0x5f);
+VENTRY(0x60); VENTRY(0x61); VENTRY(0x62); VENTRY(0x63);
+VENTRY(0x64); VENTRY(0x65); VENTRY(0x66); VENTRY(0x67);
+VENTRY(0x68); VENTRY(0x69); VENTRY(0x6a); VENTRY(0x6b);
+VENTRY(0x6c); VENTRY(0x6d); VENTRY(0x6e); VENTRY(0x6f);
+VENTRY(0x70); VENTRY(0x71); VENTRY(0x72); VENTRY(0x73);
+VENTRY(0x74); VENTRY(0x75); VENTRY(0x76); VENTRY(0x77);
+VENTRY(0x78); VENTRY(0x79); VENTRY(0x7a); VENTRY(0x7b);
+VENTRY(0x7c); VENTRY(0x7d); VENTRY(0x7e); VENTRY(0x7f);
+VENTRY(0x80); VENTRY(0x81); VENTRY(0x82); VENTRY(0x83);
+VENTRY(0x84); VENTRY(0x85); VENTRY(0x86); VENTRY(0x87);
+VENTRY(0x88); VENTRY(0x89); VENTRY(0x8a); VENTRY(0x8b);
+VENTRY(0x8c); VENTRY(0x8d); VENTRY(0x8e); VENTRY(0x8f);
+VENTRY(0x90); VENTRY(0x91); VENTRY(0x92); VENTRY(0x93);
+VENTRY(0x94); VENTRY(0x95); VENTRY(0x96); VENTRY(0x97);
+VENTRY(0x98); VENTRY(0x99); VENTRY(0x9a); VENTRY(0x9b);
+VENTRY(0x9c); VENTRY(0x9d); VENTRY(0x9e); VENTRY(0x9f);
+VENTRY(0xa0); VENTRY(0xa1); VENTRY(0xa2); VENTRY(0xa3);
+VENTRY(0xa4); VENTRY(0xa5); VENTRY(0xa6); VENTRY(0xa7);
+VENTRY(0xa8); VENTRY(0xa9); VENTRY(0xaa); VENTRY(0xab);
+VENTRY(0xac); VENTRY(0xad); VENTRY(0xae); VENTRY(0xaf);
+VENTRY(0xb0); VENTRY(0xb1); VENTRY(0xb2); VENTRY(0xb3);
+VENTRY(0xb4); VENTRY(0xb5); VENTRY(0xb6); VENTRY(0xb7);
+VENTRY(0xb8); VENTRY(0xb9); VENTRY(0xba); VENTRY(0xbb);
+VENTRY(0xbc); VENTRY(0xbd); VENTRY(0xbe); VENTRY(0xbf);
+VENTRY(0xc0); VENTRY(0xc1); VENTRY(0xc2); VENTRY(0xc3);
+VENTRY(0xc4); VENTRY(0xc5); VENTRY(0xc6); VENTRY(0xc7);
+VENTRY(0xc8); VENTRY(0xc9); VENTRY(0xca); VENTRY(0xcb);
+VENTRY(0xcc); VENTRY(0xcd); VENTRY(0xce); VENTRY(0xcf);
+VENTRY(0xd0); VENTRY(0xd1); VENTRY(0xd2); VENTRY(0xd3);
+VENTRY(0xd4); VENTRY(0xd5); VENTRY(0xd6); VENTRY(0xd7);
+VENTRY(0xd8); VENTRY(0xd9); VENTRY(0xda); VENTRY(0xdb);
+VENTRY(0xdc); VENTRY(0xdd); VENTRY(0xde); VENTRY(0xdf);
+VENTRY(0xe0); VENTRY(0xe1); VENTRY(0xe2); VENTRY(0xe3);
+VENTRY(0xe4); VENTRY(0xe5); VENTRY(0xe6); VENTRY(0xe7);
+VENTRY(0xe8); VENTRY(0xe9); VENTRY(0xea); VENTRY(0xeb);
+VENTRY(0xec); VENTRY(0xed); VENTRY(0xee); VENTRY(0xef);
+VENTRY(0xf0); VENTRY(0xf1); VENTRY(0xf2); VENTRY(0xf3);
+VENTRY(0xf4); VENTRY(0xf5); VENTRY(0xf6); VENTRY(0xf7);
+VENTRY(0xf8); VENTRY(0xf9); VENTRY(0xfa); VENTRY(0xfb);
+VENTRY(0xfc); VENTRY(0xfd); VENTRY(0xfe); VENTRY(0xff);
+
+#undef VENTRY
+
+asm (".text \n");
+
+static inline void
+LoadIdt(GATEDESC *idt, ulong idtsize)
+{
+	volatile u16 t[5];
+
+	t[0] = (u16)idtsize - 1;
+	t[1] = (u16)(ulong)idt;
+	t[2] = (u16)((ulong)idt >> 16);
+	t[3] = (u16)((ulong)idt >> 32);
+	t[4] = (u16)((ulong)idt >> 48);
+
+	asm volatile ("lidt (%0)" :: "r"(t));
+}
+
+static inline void
+SetGate(GATEDESC *desc, ulong offset, u16 sel, GATETYPE type, u8 dpl)
+{
+	desc->Offset_0_15 = (u16)offset;
+	desc->Sel = sel;
+	desc->Ist = 0;
+	desc->_Rsrv0 = 0;
+	desc->Gatetype = type;
+	desc->_Zero = 0;
+	desc->Dpl = dpl;
+	desc->P = 1;
+	desc->Offset_16_31 = (u16)(offset >> 16);
+	desc->Offset_32_63 = (u32)(offset >> 32);
+	desc->_Rsrv1 = 0;
+}
+
 void INIT
 TrapInit(void)
 {
-	;
+	for (uint i = 0; i < NR_INTERRUPT; i++)
+	{
+		KDBG ("Set gate %d %p\n", i, (void *)AllVectors[i]);
+		SetGate(idt + i, AllVectors[i], SEG_KCODE64, GATEDESC_64_INTR, DPL_KERNEL);
+	}
+
+	LoadIdt(idt, sizeof idt);
+}
+
+void 
+Trap(void)
+{
+	KDBG ("trap from %d\n", 0);
+
+	for (;;)
+		;
 }

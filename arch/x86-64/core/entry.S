@@ -31,6 +31,9 @@
 #include <arch/mm.h>
 #include <arch/memlayout.h>
 #include <msr.h>
+#include <cpuid.h>
+
+#include "mm.h"
 
 #define MULTIBOOT2_MAGIC	0xe85250d6
 #define MULTIBOOT2_FLAGS	0		// 32bit i386
@@ -39,11 +42,6 @@
 
 #define pa(x)			(x - PAGE_OFFSET)
 #define va(x)			(x + PAGE_OFFSET)
-
-#define	SEG_CODE32		0x08
-#define	SEG_DATA32		0x10
-#define	SEG_CODE64		0x18
-#define	SEG_DATA64		0x20
 
 .p2align 2
 
@@ -98,7 +96,7 @@ entry32:
 	mov	%eax, %cr0
 
 	movl	$0x2f4b2f4f, (0xb8000)
-	ljmpl	$SEG_CODE64, $pa_trampoline64
+	ljmpl	$SEG_KCODE64, $pa_trampoline64
 
 	hlt
 
@@ -189,10 +187,10 @@ multiboot_info:
 .p2align 3
 entrygdt:
 	.quad	0			// NULL
-	.quad   0x00cf9b000000ffff      // CODE32, DPL=0
-	.quad   0x00cf93000000ffff      // DATA32, DPL=0
-	.quad   0x00af9b000000ffff      // CODE64, DPL=0
-	.quad   0x00af93000000ffff      // DATA64, DPL=0
+	.quad   0x00cf9b000000ffff      // KCODE32
+	.quad   0x00cf93000000ffff      // KDATA32
+	.quad   0x00af9b000000ffff      // KCODE64
+	.quad   0x00af93000000ffff      // KDATA64
 entrygdt_e:
 
 entrygdt_p:

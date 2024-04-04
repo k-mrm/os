@@ -33,7 +33,19 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 
+#define NR_INTERRUPT		256
+
+#define DPL_KERNEL	0
+#define DPL_USER	3
+
 typedef struct GATEDESC		GATEDESC;
+typedef enum GATETYPE		GATETYPE;
+
+enum GATETYPE
+{
+	GATEDESC_64_INTR = 0xe,
+	GATEDESC_64_TRAP = 0xf,
+};
 
 /*
  * x86 Gate Descriptor
@@ -43,14 +55,16 @@ struct GATEDESC
 	u16 Offset_0_15;
 	u16 Sel;
 	u8 Ist: 3;
-	u8 _Rsrv: 5;
+	u8 _Rsrv0: 5;
 	u8 Gatetype: 4;
 	u8 _Zero: 1;
 	u8 Dpl: 2;
 	u8 P: 1;
 	u16 Offset_16_31;
 	u32 Offset_32_63;
-	u32 Rsrv;
+	u32 _Rsrv1;
 } PACKED;
+
+void TrapInit(void) INIT;
 
 #endif	// _X86_CORE_TRAP_H

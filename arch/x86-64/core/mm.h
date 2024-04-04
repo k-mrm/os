@@ -30,7 +30,17 @@
 #ifndef _X86_CORE_MM_H
 #define _X86_CORE_MM_H
 
+#define SEG_NULL		0x00
+#define	SEG_KCODE32		0x08
+#define	SEG_KDATA32		0x10
+#define	SEG_KCODE64		0x18
+#define	SEG_KDATA64		0x20
+
+#ifndef __ASSEMBLER__
+
 void KillIdmap(void) INIT;
 void X86mmInit(void) INIT;
+
+#endif	// __ASSEMBLER__
 
 #endif	// _X86_CORE_MM_H

@@ -1,6 +1,8 @@
 .text
 
+.align 8
 .globl TrapHandler
 TrapHandler:
-	cli
-	nop
+	// popq	%rdi
+	call	Trap
+	iret

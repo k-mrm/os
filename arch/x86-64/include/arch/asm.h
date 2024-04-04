@@ -42,8 +42,6 @@
 #define CR0_PG		0x80000000
 #define CR4_PAE		(1 << 5)
 
-#define CPUID_EXT1_EDX_64BIT	0x20000000
-
 #ifndef __ASSEMBLER__
 
 #include <akari/types.h>

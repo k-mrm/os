@@ -32,4 +32,6 @@
 
 #define CPUID_1		0x1
 
+#define CPUID_EXT1_EDX_64BIT	0x20000000
+
 #endif	// _ARCH_CPUID_H
