@@ -70,11 +70,13 @@ KernelMain(void)
 	KvasMap();
 
 	KallocInit();
+	TrapInit();
+
 	TTYInit();
 
 #ifdef DBGHELLO
 	KDBG("Kernel Hello!\n");
 #endif	// DBGHELLO
 
-	panic("Kernelmain Exit!");
+	panic("KernelMain Exit");
 }

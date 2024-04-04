@@ -28,55 +28,10 @@
  */
 
 #include <akari/types.h>
-#include <akari/sysmem.h>
 #include <akari/compiler.h>
-#include <akari/mm.h>
-#include <akari/kalloc.h>
-#include <arch/mm.h>
-#include <arch/memlayout.h>
-#include <msr.h>
-
-#include "mm.h"
-
-/* Kernel Page Directory */
-static PTE kpml4[512] ALIGNED(PAGESIZE);
-
-extern PTE __boot_pml4[];
-extern PTE __boot_pdpt[];
-
-bool x86nxe;
-
-void
-ArchSwitchVas(VAS *vas)
-{
-	PHYSADDR pgtpa = V2P(vas->Pgdir);
-
-	if (vas->User)
-	{
-		// TODO
-	}
-
-	asm volatile ("mov %0, %%cr3" :: "r"(pgtpa));
-}
-
-void
-ArchInitKvas(VAS *kvas)
-{
-	kvas->Pgdir = kpml4;
-	kvas->Level = 4;
-	kvas->LowestLevel = 1;
-}
 
 void INIT
-X86mmInit(void)
+TrapInit(void)
 {
-	u32 efer = Rdmsr32(IA32_EFER);
-
-	x86nxe = !!(efer & IA32_EFER_NXE);
-}
-
-void INIT
-KillIdmap(void)
-{
-	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
+	;
 }

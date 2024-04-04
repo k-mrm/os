@@ -30,7 +30,7 @@
 #include <arch/asm.h>
 #include <arch/mm.h>
 #include <arch/memlayout.h>
-#include "msr.h"
+#include <msr.h>
 
 #define MULTIBOOT2_MAGIC	0xe85250d6
 #define MULTIBOOT2_FLAGS	0		// 32bit i386

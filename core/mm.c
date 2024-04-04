@@ -124,7 +124,7 @@ Addrwalk(VAS *vas, ulong va)
 
 	pte = VasPageWalk(vas, va, false);
 
-	if (pte)
+	if (pte && PPresent(*pte))
 	{
 		return PTE_PA(*pte);
 	}
