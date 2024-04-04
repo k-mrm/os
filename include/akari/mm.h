@@ -33,24 +33,17 @@
 #include <akari/types.h>
 #include <arch/mm.h>
 
-typedef enum PAGEFLAGS	PAGEFLAGS;
 typedef struct VAS	VAS;
-
-enum PAGEFLAGS
-{
-	PAGE_NORMAL	= 0,
-	PAGE_DEVICE	= 1,
-	PAGE_RO		= (1 << 1),
-	PAGE_RW		= (1 << 2),
-	PAGE_X		= (1 << 3),
-};
 
 /*
  *  Virtual Address Space
  */
 struct VAS
 {
-	PAGETABLE pgdir;
+	PAGETABLE Pgdir;
+	uint Level;
+	uint LowestLevel;
+	bool User;
 };
 
 void __InitKernelAs(VAS *vas);

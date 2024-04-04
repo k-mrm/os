@@ -99,6 +99,12 @@ ParseBootInfo(MULTIBOOT_INFO *mb)
 	}
 }
 
+static void INIT
+X86_64Init(void)
+{
+	X86mmInit();
+}
+
 // bsp main
 void NORETURN INIT
 x86Main(MULTIBOOT_INFO *mb)
@@ -110,6 +116,8 @@ x86Main(MULTIBOOT_INFO *mb)
 	KLOG("Booting %dbit Kernel...\n", 64);
 
 	ParseBootInfo(mb);
+
+	X86_64Init();
 
 	/*
 	 * In x86-64, First 1MB is reserved

@@ -110,8 +110,10 @@ Page2Va(PAGE *page)
 }
 
 PAGE *AllocPages(uint order);
+void *AllocZeroPagesVa(uint order);
 void FreePages(PAGE *page, uint order);
 
+#define Zalloc()		AllocZeroPagesVa(0)
 #define Alloc()			Page2Va(AllocPages(0))
 #define Free(_addr)		FreePages(Va2Page(_addr), 0)
 

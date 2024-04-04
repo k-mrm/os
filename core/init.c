@@ -64,7 +64,10 @@ KernelMain(void)
 	 */
 	KallocInitEarly(0x0, 1 * GiB);
 
-	KernelRemap();
+	/*
+	 * Make mapping of Kernel Virtual Address Space
+	 */
+	KvasMap();
 
 	KallocInit();
 	TTYInit();

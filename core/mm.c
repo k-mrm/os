@@ -30,61 +30,176 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 #include <akari/mm.h>
+#include <akari/pteflags.h>
 #include <akari/panic.h>
+#include <akari/sysmem.h>
+#include <akari/kalloc.h>
+#include <akari/string.h>
 #include <arch/mm.h>
 #include <arch/memlayout.h>
+
+#define KPREFIX		"mm:"
+
+#include <akari/log.h>
 
 /*
  *  Kernel address space
  */
-static VAS kernas;
+static VAS kernvas;
 
-void INIT
-ROKernel()
+#define SwitchVas	ArchSwitchVas
+
+void
+SwitchKvas(void)
 {
-	;
+	SwitchVas(&kernvas);
 }
 
 static PTE *
-PageWalk(VAS *vas, ulong va)
+VasPageWalk(VAS *vas, ulong va, bool allocpgt)
 {
-	return NULL;
+	PAGETABLE pgt = vas->Pgdir;
+	uint level;
+	uint vlevel = vas->Level;
+	uint vll = vas->LowestLevel;
+	PHYSADDR pgtpa;
+	PTE *pte;
+
+	for (level = vlevel; level > vll; level--)
+	{
+		pte = &pgt[PIDX(level, va)];
+
+		if (PPresent(*pte))
+		{
+			pgtpa = PTE_PA(*pte);
+			pgt = (PAGETABLE)P2V(pgtpa);
+		}
+		else if (allocpgt)
+		{
+			pgt = Zalloc();
+			if (!pgt)
+			{
+				return NULL;
+			}
+			pgtpa = V2P(pgt);
+
+			ArchSetPtePgt(pte, pgtpa);
+		}
+		else
+		{
+			// unmapped
+			return NULL;
+		}
+	}
+
+	return &pgt[PIDX(level, va)];
 }
 
 static void
-mappages(VAS *vas, ulong va, PHYSADDR pa, ulong size, PAGEFLAGS flags)
+VasMapPages(VAS *vas, ulong va, PHYSADDR pa, ulong size, PTEFLAGS flags)
 {
 	PTE *pte;
 
 	for (ulong p = 0; p < size; p += PAGESIZE, va += PAGESIZE, pa += PAGESIZE)
 	{
-		pte = PageWalk(vas, va);
-		if(PPresent(*pte))
-			panic("this entry has been used: va %p", va);
+		pte = VasPageWalk(vas, va, true);
 
-		// SetPte(pte, pa, flags);
+		if (!pte)
+		{
+			panic("null pte %p", va);
+		}
+		if (PPresent(*pte))
+		{
+			panic("this entry has been used: va %p", va);
+		}
+
+		ArchSetPteLeaf(pte, pa, flags);
 	}
+}
+
+static PHYSADDR
+Addrwalk(VAS *vas, ulong va)
+{
+	PTE *pte;
+
+	pte = VasPageWalk(vas, va, false);
+
+	if (pte)
+	{
+		return PTE_PA(*pte);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+static PHYSADDR
+KAddrwalk(ulong va)
+{
+	return Addrwalk(&kernvas, va);
 }
 
 void
-Kpmap(void *va, PHYSADDR pa, PAGEFLAGS flags)
+KvasMapPage(void *va, PHYSADDR pa, PTEFLAGS flags)
 {
-	mappages(&kernas, va, pa, PAGESIZE, flags);
+	VasMapPages(&kernvas, (ulong)va, pa, PAGESIZE, flags);
 }
 
-void INIT
-KernelRemap(void)
+static void INIT
+InitKvas(void)
 {
-	;
-}
+	ArchInitKvas(&kernvas);
 
-void INIT
-InitKernelAs(void)
-{
-	__InitKernelAs(&kernas);
+	kernvas.User = false;
 
-	if (!kernas.pgdir)
+	if (!kernvas.Pgdir)
 	{
 		panic("NULL pgdir");
 	}
+	if (!PAGEALIGNED(kernvas.Pgdir))
+	{
+		panic("pgdir must be page-aligned");
+	}
+
+	memset(kernvas.Pgdir, 0, PAGESIZE);
+}
+
+void INIT
+KvasMap(void)
+{
+	PHYSADDR pstart, pend;
+	void *va;
+	PTEFLAGS flags;
+
+	InitKvas();
+
+	pstart = SysmemStart();
+	pend = SysmemEnd();
+
+	for (PHYSADDR addr = pstart; addr < pend; addr += PAGESIZE)
+	{
+		va = P2V(addr);
+		flags = PTEFLAG_NORMAL;
+
+		if (IS_KERN_TEXT(va))
+		{
+			flags |= PTEFLAG_RO | PTEFLAG_X;
+		}
+		else if (IS_KERN_RODATA(va))
+		{
+			flags |= PTEFLAG_RO;
+		}
+		else
+		{
+			flags |= PTEFLAG_RW;
+		}
+
+		// KDBG("make map: %p to %p\n", va, addr);
+		KvasMapPage(va, addr, flags);
+	}
+
+	SwitchKvas();
+
+	KDBG("Switched to kernel virtual address space\n");
 }

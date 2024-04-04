@@ -180,6 +180,24 @@ AllocPages(uint order)
 	return __AllocPages(&kblock, order);
 }
 
+void *
+AllocZeroPagesVa(uint order)
+{
+	void *va;
+
+	va = Page2Va(AllocPages(order));
+
+	if (va)
+	{
+		memset(va, 0, 1 << order << PAGESHIFT);
+		return va;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 #define BUDDY(pfn, order)	((pfn) ^ (1 << (order)))
 
 static void

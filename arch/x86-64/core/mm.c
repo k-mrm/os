@@ -31,10 +31,12 @@
 #include <akari/sysmem.h>
 #include <akari/compiler.h>
 #include <akari/mm.h>
+#include <akari/kalloc.h>
 #include <arch/mm.h>
 #include <arch/memlayout.h>
 
 #include "mm.h"
+#include "msr.h"
 
 /* Kernel Page Directory */
 static PTE kpml4[512] ALIGNED(PAGESIZE);
@@ -42,16 +44,35 @@ static PTE kpml4[512] ALIGNED(PAGESIZE);
 extern PTE __boot_pml4[];
 extern PTE __boot_pdpt[];
 
+bool x86nxe;
+
 void
-SwitchKva()
+ArchSwitchVas(VAS *vas)
 {
-	;
+	PHYSADDR pgtpa = V2P(vas->Pgdir);
+
+	if (vas->User)
+	{
+		// TODO
+	}
+
+	asm volatile ("mov %0, %%cr3" :: "r"(pgtpa));
 }
 
 void
-__InitKernelAs(VAS *vas)
+ArchInitKvas(VAS *kvas)
 {
-	vas->pgdir = kpml4;
+	kvas->Pgdir = kpml4;
+	kvas->Level = 4;
+	kvas->LowestLevel = 1;
+}
+
+void INIT
+X86mmInit(void)
+{
+	u32 efer = Rdmsr32(IA32_EFER);
+
+	x86nxe = !!(efer & IA32_EFER_NXE);
 }
 
 void INIT

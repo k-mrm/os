@@ -75,9 +75,9 @@ KernelEnd(void)
 	return __kend;
 }
 
-#define IS_KERN_TEXT(addr)	((ulong)__ktext <= (addr) && (addr) < (ulong)__ktext_e)
-#define IS_KERN_RODATA(addr)	((ulong)__rodata <= (addr) && (addr) < (ulong)__rodata_e)
-#define IS_KINIT(addr)		((ulong)__kinit <= (addr) && (addr) < (ulong)__kinit_e)
+#define IS_KERN_TEXT(_va)	((ulong)__ktext <= (ulong)(_va) && (ulong)(_va) < (ulong)__ktext_e)
+#define IS_KERN_RODATA(_va)	((ulong)__rodata <= (ulong)(_va) && (ulong)(_va) < (ulong)__rodata_e)
+#define IS_KINIT(_va)		((ulong)__kinit <= (ulong)(_va) && (ulong)(_va) < (ulong)__kinit_e)
 
 #endif	// __ASSEMBLER__
 

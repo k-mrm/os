@@ -27,72 +27,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SYSMEM_H
-#define _SYSMEM_H
+#ifndef _PTEFLAGS_H
+#define _PTEFLAGS_H
 
-#include <akari/types.h>
-#include <akari/compiler.h>
+typedef enum PTEFLAGS	PTEFLAGS;
 
-typedef struct MEMBLOCK		MEMBLOCK;
-typedef struct MEMCHUNK		MEMCHUNK;
-typedef struct SYSMEM		SYSMEM;
-
-struct MEMBLOCK
+enum PTEFLAGS
 {
-	PHYSADDR Base;
-	ulong Size;
+	PTEFLAG_NORMAL	= 0,
+	PTEFLAG_DEVICE	= 1,
+	PTEFLAG_RO	= (1 << 1),
+	PTEFLAG_RW	= (1 << 2),
+	PTEFLAG_X	= (1 << 3),
+	PTEFLAG_USER	= (1 << 4),
 };
 
-struct MEMCHUNK
-{
-	char *Name;
-	uint nBlock;
-	MEMBLOCK Block[32];
-};
+#define NORMAL_PTE(_flags)	(!((_flags) & 1))
+#define DEVICE_PTE(_flags)	((_flags) & 1)
 
-struct SYSMEM
-{
-	MEMCHUNK Avail;
-	MEMCHUNK Rsrv;
-};
-
-extern SYSMEM Sysmem;
-
-#define FOREACH_MEMCHUNK_BLOCK(chunk, idx, block)	\
-	for (block = (chunk)->Block, idx = 0;		\
-	     block < &(chunk)->Block[(chunk)->nBlock];	\
-	     block++, idx++)
-
-#define FOREACH_SYSMEM_AVAIL_BLOCK(block)	\
-	for (block = Sysmem.Avail.Block;	\
-	     block < &Sysmem.Avail.Block[Sysmem.Avail.nBlock];	\
-	     block++)
-
-#define FOREACH_SYSMEM_RSRV_BLOCK(block)	\
-	for (block = Sysmem.Rsrv.Block;		\
-	     block < &Sysmem.Rsrv.Block[Sysmem.Rsrv.nBlock];	\
-	     block++)
-
-static inline PHYSADDR
-SysmemStart(void)
-{
-	MEMBLOCK *first = &Sysmem.Avail.Block[0];
-
-	return first->Base;
-}
-
-static inline PHYSADDR
-SysmemEnd(void)
-{
-	MEMBLOCK *last = &Sysmem.Avail.Block[Sysmem.Avail.nBlock-1];
-
-	return last->Base + last->Size;
-}
-
-void NewMem(PHYSADDR base, u64 size);
-void ReserveMem(PHYSADDR base, u64 size);
-void *BootmemAlloc(uint nbytes, uint align) INIT;
-
-bool ReservedAddr(PHYSADDR addr);
-
-#endif	// _SYSMEM_H
+#endif	// _PTEFLAGS_H
