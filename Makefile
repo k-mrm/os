@@ -13,7 +13,7 @@ img = $(NAME).img
 iso = $(NAME).iso
 map = $(NAME).map
 
-NCPU ?= 1
+NCPU ?= 4
 MEMSZ ?= 512
 
 arch-$(CONFIG_X86_64) := x86-64

@@ -140,19 +140,24 @@ x86Main(MULTIBOOT_INFO *mb)
 
 	ParseBootInfo(mb);
 
-	AcpiInit();
-
 	X86CpuInit();
-	X86mmInit();
 
-	TrapInit();
+	X86mmInit();
 
 	/*
 	 * In x86-64, First 1MB is reserved
 	 */
 	ReserveMem(0x0, 0x100000);
 
+	// Kernel Early Init
+	// KernelEarlyInit();
+	
+	AcpiInit();
+
+	TrapInit();
+
 	KernelMain();
+	/* Never Return Here */
 }
 
 // ap main

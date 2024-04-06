@@ -75,12 +75,80 @@ struct RSDT
 {
 	SDTHEADER header;
 	u32 Entry[];
-};
+} PACKED;
 
 struct XSDT
 {
 	SDTHEADER header;
 	u64 Entry[];
+} PACKED;
+
+/*
+ * FACP
+ */
+typedef struct FADT	FADT;
+
+struct FADT
+{
+	SDTHEADER header;
+} PACKED;
+
+/*
+ * MADT
+ */
+
+typedef struct MADTENTRY		MADTENTRY;
+typedef struct MADT_LOCALAPIC		MADT_LOCALAPIC;
+typedef struct MADT_IOAPIC		MADT_IOAPIC;
+typedef struct MADT_LOCAL_X2APIC	MADT_LOCAL_X2APIC;
+typedef struct MADT			MADT;
+
+#define APIC_TYPE_LOCALAPIC			0
+#define APIC_TYPE_IOAPIC			1
+#define APIC_TYPE_LOCAL_X2APIC			9
+
+struct MADTENTRY
+{
+	u8 Type;
+	u8 Length;
 };
+
+struct MADT_LOCALAPIC
+{
+	MADTENTRY;
+
+	u8 ProcId;	// Processor ID
+	u8 ApicId;	// Local APIC ID
+	u32 Flags;
+};
+
+struct MADT_IOAPIC
+{
+	MADTENTRY;
+
+	u8 IoapicId;
+	u8 _Zero;
+	u32 IoapicAddr;
+	u32 IntrBase;
+};
+
+struct MADT_LOCAL_X2APIC
+{
+	MADTENTRY;
+
+	u16 _Rsrv;
+	u32 X2apicId;
+	u32 Flags;
+	u32 AcpiId;
+};
+
+struct MADT
+{
+	SDTHEADER header;
+	u32 LapicAddr;
+	u32 Flags;
+
+	MADTENTRY Table[];
+} PACKED;
 
 #endif	// _X86_ACPI_H

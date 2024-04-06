@@ -197,6 +197,58 @@ AcpiFind(char *sig)
 }
 
 void INIT
+AcpiHpetInit(void)
+{
+	;
+}
+
+static void INIT
+ApicParseLocalX2apic(MADT_LOCAL_X2APIC *x2apic)
+{
+	KLOG("x2Processor %d found %d %d\n", x2apic->X2apicId, x2apic->AcpiId, x2apic->Flags);
+}
+
+static void INIT
+ApicParseLocalapic(MADT_LOCALAPIC *apic)
+{
+	KLOG("Processor %d found %d %d\n", apic->ProcId, apic->ApicId, apic->Flags);
+}
+
+static void INIT
+AcpiMadtInit(void)
+{
+	MADT *madt;
+	MADTENTRY *ent;
+	ulong len;
+
+	madt = AcpiFind("APIC");
+
+	if (!madt)
+	{
+		return;
+	}
+
+	len = ((SDTHEADER *)madt)->Length;
+
+	for (ent = madt->Table;
+	     (ulong)ent < (ulong)madt + len;
+	     ent = (MADTENTRY *)((ulong)ent + ent->Length))
+	{
+		switch (ent->Type)
+		{
+		case APIC_TYPE_LOCALAPIC:
+			ApicParseLocalapic((MADT_LOCALAPIC *)ent);
+			break;
+		case APIC_TYPE_IOAPIC:
+			break;
+		case APIC_TYPE_LOCAL_X2APIC:
+			ApicParseLocalX2apic((MADT_LOCAL_X2APIC *)ent);
+			break;
+		}
+	}
+}
+
+void INIT
 AcpiInit(void)
 {
 	RSDP *rsdp;
@@ -232,4 +284,7 @@ found:
 	}
 
 	AcpiDump();
+
+	AcpiMadtInit();
+	AcpiHpetInit();
 }
