@@ -45,6 +45,56 @@ static int rsdpver;
 static RSDT *rsdt;
 static XSDT *xsdt;
 
+#define FOREACH_RSDT(_rsdt, _e, _i)		\
+	for (_e = RsdtNext(_rsdt, &_i);		\
+	     _e;				\
+	     _e = RsdtNext(_rsdt, &_i))
+
+#define FOREACH_XSDT(_xsdt, _e, _i)		\
+	for (_e = XsdtNext(_xsdt, &_i);		\
+	     _e;				\
+	     _e = XsdtNext(_xsdt, &_i))
+
+static void *
+RsdtNext(RSDT *rsdt, uint *itr)
+{
+	SDTHEADER *header = (SDTHEADER *)rsdt;
+	uint nentry;
+	uint i = *itr;
+
+	nentry = (header->Length - sizeof(*header)) / sizeof(u32);
+
+	if (i < nentry)
+	{
+		(*itr)++;
+		return P2V(rsdt->Entry[i]);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+static void *
+XsdtNext(XSDT *xsdt, uint *itr)
+{
+	SDTHEADER *header = (SDTHEADER *)xsdt;
+	uint nentry;
+	uint i = *itr;
+
+	nentry = (header->Length - sizeof(*header)) / sizeof(u64);
+
+	if (i < nentry)
+	{
+		(*itr)++;
+		return P2V(xsdt->Entry[i]);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 static bool
 RsdpCheck(RSDP *rsdp)
 {
@@ -55,16 +105,11 @@ RsdpCheck(RSDP *rsdp)
 static void *
 FindRsdt(char *sig)
 {
-	SDTHEADER *header = (SDTHEADER *)rsdt;
 	SDTHEADER *ent;
-	uint nentry;
+	uint i = 0;
 
-	nentry = (header->Length - sizeof(*header)) / sizeof(u32);
-
-	for (uint i = 0; i < nentry; i++)
+	FOREACH_RSDT (rsdt, ent, i)
 	{
-		ent = (SDTHEADER *)P2V(rsdt->Entry[i]);
-
 		if (!strncmp(ent->Signature, sig, 4))
 		{
 			return ent;
@@ -77,16 +122,11 @@ FindRsdt(char *sig)
 static void *
 FindXsdt(char *sig)
 {
-	SDTHEADER *header = (SDTHEADER *)xsdt;
 	SDTHEADER *ent;
-	uint nentry;
+	uint i = 0;
 
-	nentry = (header->Length - sizeof(*header)) / sizeof(u64);
-
-	for (uint i = 0; i < nentry; i++)
+	FOREACH_XSDT (xsdt, ent, i)
 	{
-		ent = (SDTHEADER *)P2V(xsdt->Entry[i]);
-
 		if (!strncmp(ent->Signature, sig, 4))
 		{
 			return ent;
@@ -99,25 +139,31 @@ FindXsdt(char *sig)
 static void
 RsdtDump(void)
 {
-	SDTHEADER *header = (SDTHEADER *)rsdt;
 	SDTHEADER *ent;
-	uint nentry;
+	uint i = 0;
 
-	nentry = (header->Length - sizeof(*header)) / sizeof(u32);
-
-	for (uint i = 0; i < nentry; i++)
+	KLOG("ACPI RSDT:\n");
+	FOREACH_RSDT (rsdt, ent, i)
 	{
-		ent = (SDTHEADER *)P2V(rsdt->Entry[i]);
-		KDBG("%s (%s %s)\n", ent->Signature,
-				     ent->Oemid,
-				     ent->OemTableId);
+		KLOG("\t%s (%s %s)\n", ent->Signature,
+				       ent->Oemid,
+				       ent->OemTableId);
 	}
 }
 
 static void
 XsdtDump(void)
 {
-	;
+	SDTHEADER *ent;
+	uint i = 0;
+
+	KLOG("ACPI XSDT:\n");
+	FOREACH_XSDT (xsdt, ent, i)
+	{
+		KDBG("\t%s (%s %s)\n", ent->Signature,
+				       ent->Oemid,
+				       ent->OemTableId);
+	}
 }
 
 static void
