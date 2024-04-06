@@ -64,6 +64,16 @@ inb(u16 port)
 	return data;
 }
 
+static inline ulong
+Cr2(void)
+{
+	ulong cr2;
+
+	asm volatile ("movq %%cr2, %0" : "=r"(cr2));
+
+	return cr2;
+}
+
 #endif	// __ASSEMBLER__
 
 #endif	// _X86_ASM_H

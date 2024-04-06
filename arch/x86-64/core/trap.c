@@ -258,10 +258,15 @@ void
 X86PageFault(X86TRAPFRAME *tf)
 {
 	PAGEFAULT pf;
+	ulong faultaddr = Cr2();
 
-	KDBG ("page fault @%p\n", tf->Rip);
+	KDBG("page fault @%p (%p)\n", tf->Rip, faultaddr);
 
-	// PageFault();
+	pf.FaultAddr = faultaddr;
+	pf.Wr = !!(tf->Errcode & (1 << 1));
+	pf.User = false;
+
+	PageFault(&pf);
 }
 
 /*

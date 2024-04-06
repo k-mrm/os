@@ -32,13 +32,7 @@
 #include <akari/fault.h>
 
 void
-FaultHandler()
-{
-	;
-}
-
-void
 PageFault(PAGEFAULT *pf)
 {
-	;
+	panic("Page Fault occured @%p", pf->FaultAddr);
 }

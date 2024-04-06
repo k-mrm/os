@@ -41,6 +41,9 @@ struct PAGEFAULT
 {
 	ulong FaultAddr;
 	bool Wr;
+	bool User;
 };
+
+void PageFault(PAGEFAULT *pf);
 
 #endif	// _FAULT_H
