@@ -115,7 +115,7 @@ struct MADTENTRY
 
 struct MADT_LOCALAPIC
 {
-	MADTENTRY;
+	MADTENTRY Header;
 
 	u8 ProcId;	// Processor ID
 	u8 ApicId;	// Local APIC ID
@@ -124,7 +124,7 @@ struct MADT_LOCALAPIC
 
 struct MADT_IOAPIC
 {
-	MADTENTRY;
+	MADTENTRY Header;
 
 	u8 IoapicId;
 	u8 _Zero;
@@ -134,7 +134,7 @@ struct MADT_IOAPIC
 
 struct MADT_LOCAL_X2APIC
 {
-	MADTENTRY;
+	MADTENTRY Header;
 
 	u16 _Rsrv;
 	u32 X2apicId;
@@ -144,7 +144,7 @@ struct MADT_LOCAL_X2APIC
 
 struct MADT
 {
-	SDTHEADER header;
+	SDTHEADER Header;
 	u32 LapicAddr;
 	u32 Flags;
 

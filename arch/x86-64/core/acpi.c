@@ -205,13 +205,18 @@ AcpiHpetInit(void)
 static void INIT
 ApicParseLocalX2apic(MADT_LOCAL_X2APIC *x2apic)
 {
-	KLOG("x2Processor %d found %d %d\n", x2apic->X2apicId, x2apic->AcpiId, x2apic->Flags);
+	KLOG("x2apic Processor %d found %d %d\n", x2apic->X2apicId, x2apic->AcpiId, x2apic->Flags);
 }
 
 static void INIT
 ApicParseLocalapic(MADT_LOCALAPIC *apic)
 {
-	KLOG("Processor %d found %d %d\n", apic->ProcId, apic->ApicId, apic->Flags);
+	if (!(apic->Flags & 1))
+	{
+		return;
+	}
+
+	KLOG("Processor %d found %d\n", apic->ProcId, apic->ApicId);
 }
 
 static void INIT
