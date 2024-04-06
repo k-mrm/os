@@ -33,14 +33,54 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 
+typedef struct RSDP		RSDP;
+typedef struct XSDP		XSDP;
+typedef struct SDTHEADER	SDTHEADER;
+typedef struct RSDT		RSDT;
+typedef struct XSDT		XSDT;
+
 struct RSDP
 {
-	;
+	char Signature[8];
+	u8 Checksum;
+	char Oemid[6];
+	u8 Revision;
+	u32 RsdtAddress;
 } PACKED;
 
 struct XSDP
 {
+	RSDP V1;
 
+	u32 Length;
+	u64 XsdtAddress;
+	u8 XChecksum;
+	u8 _Rsrv[3];
 } PACKED;
+
+struct SDTHEADER
+{
+	char Signature[4];
+	u32 Length;
+	u8 Revision;
+	u8 Checksum;
+	char Oemid[6];
+	char OemTableId[8];
+	u32 OemRevision;
+	u32 CreatorId;
+	u32 CreatorRevision;
+} PACKED;
+
+struct RSDT
+{
+	SDTHEADER header;
+	u32 Entry[];
+};
+
+struct XSDT
+{
+	SDTHEADER header;
+	u64 Entry[];
+};
 
 #endif	// _X86_ACPI_H

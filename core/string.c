@@ -31,13 +31,13 @@
 #include <akari/string.h>
 
 void *
-memcpy(void *dst, const void *src, u64 n)
+memcpy(void *dst, const void *src, ulong n)
 {
 	return memmove(dst, src, n);
 }
 
 void *
-memmove(void *dst, const void *src, u64 n)
+memmove(void *dst, const void *src, ulong n)
 {
 	char *d = dst;
 	const char *s = src;
@@ -59,7 +59,7 @@ memmove(void *dst, const void *src, u64 n)
 }
 
 void *
-memset(void *dst, int c, u64 n)
+memset(void *dst, int c, ulong n)
 {
 	char *d = dst;
 
@@ -93,7 +93,7 @@ strcmp(const char *s1, const char *s2)
 }
 
 int
-strncmp(const char *s1, const char *s2, u64 len)
+strncmp(const char *s1, const char *s2, ulong len)
 {
 	while (*s1 && *s1 == *s2 && len > 0)
 	{

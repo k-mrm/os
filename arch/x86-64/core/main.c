@@ -47,6 +47,21 @@
 #include "mm.h"
 #include "trap.h"
 
+static void *xsdp = NULL;
+static void *rsdp = NULL;
+
+void * INIT
+Multiboot2Xsdp(void)
+{
+	return xsdp;
+}
+
+void * INIT
+Multiboot2Rsdp(void)
+{
+	return rsdp;
+}
+
 static void INIT
 ParseBootInfo(MULTIBOOT_INFO *mb)
 {
@@ -66,7 +81,6 @@ ParseBootInfo(MULTIBOOT_INFO *mb)
 		case MULTIBOOT_TAG_TYPE_CMDLINE: {
 			MULTIBOOT_TAG_STRING *cmd =
 				(MULTIBOOT_TAG_STRING *)tag;
-			KDBG("cmdline: %s\n", cmd->String);
 			SetParam(cmd->String);
 			break;
 		}
@@ -96,18 +110,22 @@ ParseBootInfo(MULTIBOOT_INFO *mb)
 			}
 			break;	
 		}
+		case MULTIBOOT_TAG_TYPE_ACPI_OLD: {
+			MULTIBOOT_TAG_ACPI_OLD *acpi =
+				(MULTIBOOT_TAG_ACPI_OLD *)tag;
+			rsdp = &acpi->Rsdp;
+			break;
+		}
+		case MULTIBOOT_TAG_TYPE_ACPI_NEW: {
+			MULTIBOOT_TAG_ACPI_NEW *acpi =
+				(MULTIBOOT_TAG_ACPI_NEW *)tag;
+			xsdp = &acpi->Xsdp;
+			break;
+		}
 		default:
 			break;
 		}
 	}
-}
-
-static void INIT
-X86_64Init(void)
-{
-	X86CpuInit();
-	X86mmInit();
-	TrapInit();
 }
 
 // bsp main
@@ -122,7 +140,12 @@ x86Main(MULTIBOOT_INFO *mb)
 
 	ParseBootInfo(mb);
 
-	X86_64Init();
+	AcpiInit();
+
+	X86CpuInit();
+	X86mmInit();
+
+	TrapInit();
 
 	/*
 	 * In x86-64, First 1MB is reserved
