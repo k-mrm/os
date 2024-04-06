@@ -27,72 +27,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_MSR_H
-#define _X86_MSR_H
-
-#define IA32_EFER	0xc0000080	
-#define IA32_EFER_SCE		(1 << 0)
-#define IA32_EFER_LME		(1 << 8)
-#define IA32_EFER_LMA		(1 << 10)
-#define IA32_EFER_NXE		(1 << 11)
-#define IA32_EFER_SVME		(1 << 12)
-#define IA32_EFER_LMSLE		(1 << 13)
-#define IA32_EFER_FFXSR		(1 << 14)
-#define IA32_EFER_TCE		(1 << 15)
-
-#ifndef __ASSEMBLER__
-
 #include <akari/types.h>
+#include <akari/compiler.h>
+#include <akari/string.h>
+#include <akari/panic.h>
 
-static inline void
-Rdmsr(u32 reg, u32 *a, u32 *d)
+#define KPREFIX		"x86cpu:"
+
+#include <akari/log.h>
+
+#include <x86cpu.h>
+#include <cpuid.h>
+
+extern X86CPU __initdata_x86cpu_s[];
+extern X86CPU __initdata_x86cpu_e[];
+
+static X86CPU *X86cpu;
+
+static X86CPU *
+FindX86Cpu(char *vendor)
 {
-	asm volatile ("rdmsr" : "=a"(*a), "=d"(*d) : "c"(reg));
+	const char **id;
+
+	for (X86CPU *c = __initdata_x86cpu_s;
+	     c < __initdata_x86cpu_e;
+	     c++)
+	{
+		id = c->Id;
+		while (*id)
+		{
+			if (!strcmp(*id, vendor))
+			{
+				return c;
+			}
+			id++;
+		}
+	}
+
+	panic("cannot find processor");
 }
 
-static inline u32
-Rdmsr32(u32 reg)
+void INIT
+X86CpuInit(void)
 {
-	u32 a, d;
+	char cpuvendor[13] = {0};
+	u32 a;
 
-	Rdmsr(reg, &a, &d);
+	Cpuid(CPUID_0, &a, (u32 *)cpuvendor, (u32 *)(cpuvendor+8), (u32 *)(cpuvendor+4));
 
-	return a;
+	KLOG("CPU Vendor: %s\n", cpuvendor);
+
+	X86cpu = FindX86Cpu(cpuvendor);
+
+	KLOG("Vendor: %s\n", X86cpu->Vendor);
 }
-
-static inline u64
-Rdmsr64(u32 reg)
-{
-	u32 a, d;
-
-	Rdmsr(reg, &a, &d);
-
-	return (u64)a | ((u64)d << 32);
-}
-
-static inline void
-Wrmsr(u32 reg, u32 a, u32 d)
-{
-	asm volatile ("wrmsr" :: "c"(reg), "a"(a), "d"(d));
-}
-
-static inline void
-Wrmsr32(u32 reg, u32 val)
-{
-	Wrmsr(reg, val, 0);
-}
-
-static inline void
-Wrmsr64(u32 reg, u64 val)
-{
-	u32 a, d;
-
-	a = (u32)val;
-	d = (u32)(val >> 32);
-
-	Wrmsr(reg, a, d);
-}
-
-#endif	// __ASSEMBLER__
-
-#endif	// _X86_MSR_H

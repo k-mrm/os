@@ -40,6 +40,8 @@
 
 #include <akari/log.h>
 
+#include <cpuid.h>
+#include <x86cpu.h>
 #include "serial.h"
 #include "multiboot.h"
 #include "mm.h"
@@ -103,6 +105,7 @@ ParseBootInfo(MULTIBOOT_INFO *mb)
 static void INIT
 X86_64Init(void)
 {
+	X86CpuInit();
 	X86mmInit();
 	TrapInit();
 }

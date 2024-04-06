@@ -30,9 +30,13 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 #include <akari/fault.h>
+#include <akari/panic.h>
 
 void
 PageFault(PAGEFAULT *pf)
 {
-	panic("Page Fault occured @%p", pf->FaultAddr);
+	if (!pf->User)
+	{
+		panic("Page Fault occured @%p", pf->FaultAddr);
+	}
 }

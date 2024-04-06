@@ -6,3 +6,4 @@ obj-1 += serial.o
 obj-1 += mm.o
 obj-1 += trap.o
 obj-1 += trap-handler.o
+obj-1 += irq.o

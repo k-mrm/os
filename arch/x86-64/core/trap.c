@@ -247,7 +247,6 @@ TrapInit(void)
 {
 	for (uint i = 0; i < NR_INTERRUPT; i++)
 	{
-		KDBG ("Set gate %d %p\n", i, (void *)AllVectors[i]);
 		SetGate(idt + i, AllVectors[i], SEG_KCODE64, GATEDESC_64_INTR, DPL_KERNEL);
 	}
 
@@ -275,6 +274,7 @@ X86PageFault(X86TRAPFRAME *tf)
 void 
 Trap(X86TRAPFRAME *tf)
 {
+	int intr;
 	KDBG("trap from %d(err=0x%x) %p\n", tf->Trapno, tf->Errcode, tf->Rip);
 
 	switch (tf->Trapno)
@@ -285,6 +285,11 @@ Trap(X86TRAPFRAME *tf)
 	case E_GP:
 		panic("GP");
 	default:
-		panic("unknown trap");
+		intr = X86Interrupt(tf);
+		if (!intr)
+		{
+			panic("unknown trap");
+		}
+		break;
 	}
 }

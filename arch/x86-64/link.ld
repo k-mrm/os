@@ -30,6 +30,9 @@ SECTIONS {
 	
 	. = ALIGN(4096);
 	.data : AT(ADDR(.data) - offset) {
+		__initdata_x86cpu_s = .;
+		KEEP(*(.initdata.x86cpu))
+		__initdata_x86cpu_e = .;
 		*(.data .data.*)
 	}
 

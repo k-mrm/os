@@ -27,11 +27,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _X86_CORE_CPUID_H
-#define _X86_CORE_CPUID_H
+#ifndef _X86_CPUID_H
+#define _X86_CPUID_H
 
+#define CPUID_0		0x0
 #define CPUID_1		0x1
 
 #define CPUID_EXT1_EDX_64BIT	0x20000000
 
-#endif	// _ARCH_CPUID_H
+#ifndef __ASSEMBLER__
+
+#include <akari/types.h>
+
+static inline void
+Cpuid(u32 ax, u32 *a, u32 *b, u32 *c, u32 *d)
+{
+	asm volatile ("cpuid" : "=a"(*a), "=b"(*b), "=c"(*c), "=d"(*d)
+			      : "a"(ax));
+}
+
+#endif	// __ASSEMBLER__
+
+#endif	// _X86_CPUID_H
