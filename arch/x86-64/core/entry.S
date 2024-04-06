@@ -205,6 +205,15 @@ trampoline64:
 
 .global entry64
 entry64:
+	// set data segment
+	movw	$SEG_KDATA64, %ax
+	movw	%ax, %ds
+	movw	%ax, %ss
+	movw	%ax, %es
+	movw	$0, %ax
+	movw	%ax, %fs
+	movw	%ax, %gs
+
 	// zero .bss
 	cld
 	xorl	%eax, %eax

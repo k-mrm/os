@@ -71,7 +71,7 @@ LoadGdt(const ulong *gdt, ulong gdtsize)
 static void INIT
 GdtInit(void)
 {
-	LoadGdt(&gdt, sizeof gdt);
+	LoadGdt(gdt, sizeof gdt);
 }
 
 void

@@ -29,10 +29,14 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <akari/panic.h>
+#include <akari/fault.h>
 #include <arch/memlayout.h>
 
 #include "mm.h"
 #include "trap.h"
+
+#define KPREFIX		"x86trap:"
 
 #include <akari/log.h>
 
@@ -253,7 +257,11 @@ TrapInit(void)
 void
 X86PageFault(X86TRAPFRAME *tf)
 {
-	;
+	PAGEFAULT pf;
+
+	KDBG ("page fault @%p\n", tf->Rip);
+
+	// PageFault();
 }
 
 /*
@@ -262,12 +270,16 @@ X86PageFault(X86TRAPFRAME *tf)
 void 
 Trap(X86TRAPFRAME *tf)
 {
-	KDBG ("trap from %d(err%d) %p\n", tf->Trapno, tf->Errcode, tf->Rip);
+	KDBG("trap from %d(err=0x%x) %p\n", tf->Trapno, tf->Errcode, tf->Rip);
 
-	if (tf->Trapno == E_GP)
+	switch (tf->Trapno)
 	{
-		panic ("#GP");
-		for (;;)
-			;
+	case E_PF:
+		X86PageFault(tf);
+		break;
+	case E_GP:
+		panic("GP");
+	default:
+		panic("unknown trap");
 	}
 }

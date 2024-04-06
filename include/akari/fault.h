@@ -27,18 +27,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _FAULT_H
+#define _FAULT_H
+
 #include <akari/types.h>
-#include <akari/compiler.h>
-#include <akari/fault.h>
 
-void
-FaultHandler()
-{
-	;
-}
+typedef struct PAGEFAULT	PAGEFAULT;
 
-void
-PageFault(PAGEFAULT *pf)
+/*
+ *  Page Fault Descriptor
+ */
+struct PAGEFAULT
 {
-	;
-}
+	ulong FaultAddr;
+	bool Wr;
+};
+
+#endif	// _FAULT_H

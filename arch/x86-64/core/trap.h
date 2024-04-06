@@ -105,7 +105,7 @@ struct X86TRAPFRAME
 	/* iret */
 	u64 Rip;
 	u64 Cs;
-	u64 Eflags;
+	u64 Rflags;
 	u64 Rsp;
 	u64 Ss;
 } PACKED;
