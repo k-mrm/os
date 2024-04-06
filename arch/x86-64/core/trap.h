@@ -38,8 +38,26 @@
 #define DPL_KERNEL	0
 #define DPL_USER	3
 
+#define	INT_NMI		2
+
+// Exceptions
+#define E_DE		0x0
+#define E_DB		0x1
+#define E_BP		0x3
+#define E_OF		0x4
+#define E_BR		0x5
+#define E_UD		0x6
+#define E_NM		0x7
+#define E_DF		0x8
+#define E_TS		0xa
+#define E_NP		0xb
+#define E_SS		0xc
+#define E_GP		0xd
+#define E_PF		0xe
+
 typedef struct GATEDESC		GATEDESC;
 typedef enum GATETYPE		GATETYPE;
+typedef struct X86TRAPFRAME	X86TRAPFRAME;
 
 enum GATETYPE
 {
@@ -63,6 +81,33 @@ struct GATEDESC
 	u16 Offset_16_31;
 	u32 Offset_32_63;
 	u32 _Rsrv1;
+} PACKED;
+
+struct X86TRAPFRAME
+{
+	u64 Rax;
+	u64 Rbx;
+	u64 Rcx;
+	u64 Rdx;
+	u64 Rbp;
+	u64 Rsi;
+	u64 Rdi;
+	u64 R8;
+	u64 R9;
+	u64 R10;
+	u64 R11;
+	u64 R12;
+	u64 R13;
+	u64 R14;
+	u64 R15;
+	u64 Trapno;
+	u64 Errcode;
+	/* iret */
+	u64 Rip;
+	u64 Cs;
+	u64 Eflags;
+	u64 Rsp;
+	u64 Ss;
 } PACKED;
 
 void TrapInit(void) INIT;

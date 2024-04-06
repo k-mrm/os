@@ -46,18 +46,29 @@ extern ulong AllVectors[];
 	asm (	\
 		".align 4 \n"		\
 		"__vector" #_n "_: \n"	\
-		"	push $" #_n "\n"	\
+		"	pushq $0 \n"	\
+		"	pushq $" #_n "\n"	\
+		" 	jmp TrapHandler \n"	\
+	)
+
+// vector with error code
+#define VECTORERR(_n)	\
+	void __vector ## _n ## _(void);	\
+	asm (	\
+		".align 4 \n"		\
+		"__vector" #_n "_: \n"	\
+		"	pushq $" #_n "\n"	\
 		" 	jmp TrapHandler \n"	\
 	)
 
 VECTOR(0x00); VECTOR(0x01); VECTOR(0x02); VECTOR(0x03);
 VECTOR(0x04); VECTOR(0x05); VECTOR(0x06); VECTOR(0x07);
-VECTOR(0x08); VECTOR(0x09); VECTOR(0x0a); VECTOR(0x0b);
-VECTOR(0x0c); VECTOR(0x0d); VECTOR(0x0e); VECTOR(0x0f);
-VECTOR(0x10); VECTOR(0x11); VECTOR(0x12); VECTOR(0x13);
-VECTOR(0x14); VECTOR(0x15); VECTOR(0x16); VECTOR(0x17);
+VECTORERR(0x08); VECTOR(0x09); VECTORERR(0x0a); VECTORERR(0x0b);
+VECTORERR(0x0c); VECTORERR(0x0d); VECTORERR(0x0e); VECTOR(0x0f);
+VECTOR(0x10); VECTORERR(0x11); VECTOR(0x12); VECTOR(0x13);
+VECTOR(0x14); VECTORERR(0x15); VECTOR(0x16); VECTOR(0x17);
 VECTOR(0x18); VECTOR(0x19); VECTOR(0x1a); VECTOR(0x1b);
-VECTOR(0x1c); VECTOR(0x1d); VECTOR(0x1e); VECTOR(0x1f);
+VECTOR(0x1c); VECTORERR(0x1d); VECTORERR(0x1e); VECTOR(0x1f);
 VECTOR(0x20); VECTOR(0x21); VECTOR(0x22); VECTOR(0x23);
 VECTOR(0x24); VECTOR(0x25); VECTOR(0x26); VECTOR(0x27);
 VECTOR(0x28); VECTOR(0x29); VECTOR(0x2a); VECTOR(0x2b);
@@ -116,6 +127,7 @@ VECTOR(0xf8); VECTOR(0xf9); VECTOR(0xfa); VECTOR(0xfb);
 VECTOR(0xfc); VECTOR(0xfd); VECTOR(0xfe); VECTOR(0xff);
 
 #undef VECTOR
+#undef VECTORERR
 
 // make vector table
 
@@ -238,11 +250,24 @@ TrapInit(void)
 	LoadIdt(idt, sizeof idt);
 }
 
-void 
-Trap(void)
+void
+X86PageFault(X86TRAPFRAME *tf)
 {
-	KDBG ("trap from %d\n", 0);
+	;
+}
 
-	for (;;)
-		;
+/*
+ *  General Trap Handler
+ */
+void 
+Trap(X86TRAPFRAME *tf)
+{
+	KDBG ("trap from %d(err%d) %p\n", tf->Trapno, tf->Errcode, tf->Rip);
+
+	if (tf->Trapno == E_GP)
+	{
+		panic ("#GP");
+		for (;;)
+			;
+	}
 }
