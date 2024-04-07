@@ -196,10 +196,27 @@ AcpiFind(char *sig)
 	}
 }
 
-void INIT
+static void INIT
 AcpiHpetInit(void)
 {
-	;
+	HPET *hpet;
+
+	hpet = AcpiFind("HPET");
+
+	if (!hpet)
+	{
+		return;
+	}
+
+	if (hpet->Address.Space != ACPI_SPACE_SYSTEM_MEMORY)
+	{
+		KLOG("HPET address space is not memory, aborted\n");
+		return;
+	}
+
+	KLOG("hpet register @%p\n", hpet->Address.Address);
+
+	HpetPreInit();
 }
 
 static void INIT
@@ -216,7 +233,7 @@ ApicParseLocalapic(MADT_LOCALAPIC *apic)
 		return;
 	}
 
-	KLOG("Processor %d found %d\n", apic->ProcId, apic->ApicId);
+	KLOG("Processor %d(%d) found\n", apic->ProcId, apic->ApicId);
 }
 
 static void INIT

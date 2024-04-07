@@ -151,4 +151,38 @@ struct MADT
 	MADTENTRY Table[];
 } PACKED;
 
+/*
+ * General Address Structure
+ */
+#define ACPI_SPACE_SYSTEM_MEMORY	0x0
+#define ACPI_SPACE_SYSTEM_IO		0x1
+#define ACPI_SPACE_PCI_CONFIG		0x2
+#define ACPI_SPACE_PCI_BAR		0x6
+
+typedef struct GAS		GAS;
+
+struct GAS
+{
+	u8 Space;
+	u8 BitWidth;
+	u8 BitOffset;
+	u8 AccessSize;
+	u64 Address;
+} PACKED;
+
+/*
+ * HPET
+ */
+typedef struct HPET		HPET;
+
+struct HPET
+{
+	SDTHEADER Header;
+	u32 HardwareId;
+	GAS Address;
+	u8 Number;
+	u16 MinTick;
+	u8 Flags;
+} PACKED;
+
 #endif	// _X86_ACPI_H

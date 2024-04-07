@@ -27,8 +27,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <akari/types.h>
 #include <akari/compiler.h>
 #include <x86cpu.h>
+#include <cpuid.h>
+
+#define KPREFIX		"AMD:"
+
+#include <akari/log.h>
+
+static void
+X86AMDInit(X86CPU *cpu)
+{
+	char procstr[48] = {0};
+
+	Cpuid(CPUID_EXT2,
+	      (u32 *)procstr, (u32 *)(procstr+4), (u32 *)(procstr+8), (u32 *)(procstr+12));
+	Cpuid(CPUID_EXT3,
+	      (u32 *)(procstr+16), (u32 *)(procstr+20), (u32 *)(procstr+24), (u32 *)(procstr+28));
+	Cpuid(CPUID_EXT4,
+	      (u32 *)(procstr+32), (u32 *)(procstr+36), (u32 *)(procstr+40), (u32 *)(procstr+44));
+
+	KLOG("Processor: %s\n", procstr);
+}
+
+static X86CPUOPS amdops = {
+	.Init = X86AMDInit,
+};
 
 static const char *amdid[] = {
 	"AuthenticAMD",
@@ -36,4 +61,4 @@ static const char *amdid[] = {
 	NULL,
 };
 
-DEFINE_X86_CPU(AMD, amdid);
+DEFINE_X86_CPU(AMD, amdid, &amdops);

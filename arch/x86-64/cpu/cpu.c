@@ -80,4 +80,9 @@ X86CpuInit(void)
 	X86cpu = FindX86Cpu(cpuvendor);
 
 	KLOG("Vendor: %s\n", X86cpu->Vendor);
+
+	if (X86cpu->Ops->Init)
+	{
+		X86cpu->Ops->Init(X86cpu);
+	}
 }

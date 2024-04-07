@@ -27,12 +27,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <akari/types.h>
 #include <akari/compiler.h>
-#include <x86cpu.h>
 
-static const char *intelid[] = {
-	"GenuineIntel",
-	NULL,
-};
+#include "hpet.h"
 
-DEFINE_X86_CPU(Intel, intelid, NULL);
+void INIT
+HpetInit(void)
+{
+	;
+}
+
+void INIT
+HpetPreInit()
+{
+	;
+}

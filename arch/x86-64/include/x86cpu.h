@@ -33,21 +33,29 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 
-typedef struct X86CPU	X86CPU;
+typedef struct X86CPU		X86CPU;
+typedef struct X86CPUOPS	X86CPUOPS;
+
+struct X86CPUOPS
+{
+	void (*Init)(X86CPU *cpu);
+};
 
 struct X86CPU
 {
 	const char *Vendor;
 	const char **Id;
+	X86CPUOPS *Ops;
 };
 
 void X86CpuInit(void) INIT;
 
-#define DEFINE_X86_CPU(_vndr, _id)	\
+#define DEFINE_X86_CPU(_vndr, _id, _ops)	\
 	static USED SECTION(".initdata.x86cpu") ALIGNED(_Alignof(X86CPU))	\
 	X86CPU __X86_CPU_ ## _vndr = {	\
 		.Vendor = #_vndr,	\
 		.Id = _id,		\
+		.Ops = _ops,		\
 	}
 
 #endif	// _X86_X86CPU_H

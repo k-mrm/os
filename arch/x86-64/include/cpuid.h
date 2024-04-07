@@ -32,8 +32,13 @@
 
 #define CPUID_0		0x0
 #define CPUID_1		0x1
+#define CPUID_EXT1	0x80000001
+#define CPUID_EXT2	0x80000002
+#define CPUID_EXT3	0x80000003
+#define CPUID_EXT4	0x80000004
 
 #define CPUID_EXT1_EDX_64BIT	0x20000000
+
 
 #ifndef __ASSEMBLER__
 
