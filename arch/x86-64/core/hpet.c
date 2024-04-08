@@ -41,6 +41,11 @@
 
 #include "hpet.h"
 
+#define HPET_MMIO_SIZE		1024
+
+#define HPET_ID			0x0
+#define HPET_CLK_PERIOD		0x4
+
 typedef struct HPETDEV	HPETDEV;
 
 /*
@@ -50,15 +55,33 @@ struct HPETDEV
 {
 	void *Base;
 	PHYSADDR BasePa;
+	
+	bool Cnt64;
+	uint nChannel;
+	uint Period;	// 10(^-15) s	
 };
+
+static inline void
+HpetWr32(HPETDEV *hpet, ulong offset, u32 val)
+{
+	*(volatile u32 *)(hpet->Base + offset) = val;
+}
+
+static inline u32
+HpetRd32(HPETDEV *hpet, ulong offset)
+{
+	return *(volatile u32 *)(hpet->Base + offset);
+}
 
 int INIT
 HpetProbe(TIMER *tm)
 {
-	HPETDEV *hpet = tm->Device;	
+	HPETDEV *hpet = tm->Device;
+	u32 id;
+	u32 clkperiod;
 	void *base;
 
-	base = KIOmap(hpet->BasePa, 1024);
+	base = KIOmap(hpet->BasePa, HPET_MMIO_SIZE);
 	if (!base)
 	{
 		return -1;
@@ -66,7 +89,15 @@ HpetProbe(TIMER *tm)
 
 	hpet->Base = base;
 
-	KLOG("%s Probed\n", tm->Name);
+	id = HpetRd32(hpet, HPET_ID);
+	clkperiod = HpetRd32(hpet, HPET_CLK_PERIOD);
+
+	hpet->Cnt64 = !!(id & (1 << 13));
+	hpet->nChannel = (id >> 8) & 0x1f;
+	hpet->Period = clkperiod;
+
+	KLOG("%s: %d channel(s) clock period: %d ns %d bit counter\n",
+	     tm->Name, hpet->nChannel, clkperiod / 1000000, hpet->Cnt64 ? 64 : 32);
 
 	return 0;
 }
@@ -80,7 +111,7 @@ HpetInit(PHYSADDR baseaddr, int n)
 {
 	HPETDEV *dev;
 
-	ReserveMem(baseaddr, 1024);
+	ReserveMem(baseaddr, HPET_MMIO_SIZE);
 
 	dev = BootmemAlloc(sizeof *dev, _Alignof(*dev));
 

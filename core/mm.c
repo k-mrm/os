@@ -166,6 +166,8 @@ KIOmap(PHYSADDR pa, ulong nbytes)
 	}
 
 	KRemap(va, pa, flags);
+
+	return va;
 }
 
 static void INIT
