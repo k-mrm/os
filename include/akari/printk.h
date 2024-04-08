@@ -33,6 +33,7 @@
 #include <akari/stdarg.h>
 
 int printk(const char *fmt, ...);
+int sprintf(char *buf, const char *fmt, ...);
 int vsprintk(char *buf, const char *fmt, va_list ap);
 
 #endif	// _PRINTK_H

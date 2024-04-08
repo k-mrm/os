@@ -32,6 +32,7 @@
 
 #include <akari/types.h>
 #include <akari/console.h>
+#include <akari/compiler.h>
 
 typedef struct TTY	TTY;
 
@@ -46,6 +47,6 @@ struct TTY
 
 extern TTY Ktty;	// Kernel tty
 
-void TTYInit(void);
+void TTYInit(void) INIT;
 
 #endif	// _TTY_H

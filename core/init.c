@@ -33,6 +33,7 @@
 #include <akari/kalloc.h>
 #include <akari/panic.h>
 #include <akari/mm.h>
+#include <akari/timer.h>
 #include <arch/memlayout.h>
 
 #define KPREFIX	"init:"
@@ -72,6 +73,7 @@ KernelMain(void)
 	KallocInit();
 
 	TTYInit();
+	TimerInit();
 
 #ifdef DBGHELLO
 	KDBG("Kernel Hello!\n");

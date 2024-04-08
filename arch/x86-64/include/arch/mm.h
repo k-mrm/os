@@ -35,6 +35,11 @@
 #define PTE_P		(1 << 0)
 #define PTE_W		(1 << 1)
 #define PTE_U		(1 << 2)
+#define PTE_PWT		(1 << 3)
+#define PTE_PCD		(1 << 4)
+#define PTE_A		(1 << 5)
+#define PTE_D		(1 << 6)
+#define PTE_G		(1 << 8)
 #define PTE_XD		(1ull << 63)
 
 /*
@@ -91,6 +96,10 @@ ArchPteFlags(PTEFLAGS flags)
 	if (x86nxe && !(flags & PTEFLAG_X))
 	{
 		archflags |= PTE_XD;
+	}
+	if (flags & PTEFLAG_NOCACHE)
+	{
+		archflags |= PTE_PCD;
 	}
 
 	return archflags;

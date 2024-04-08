@@ -47,6 +47,7 @@ struct VAS
 };
 
 void __InitKernelAs(VAS *vas);
+void *KIOmap(PHYSADDR pa, ulong nbytes);
 
 #define ALIGN(p, align)		(((ulong)(p) + (align)-1) & ~((align)-1))
 #define ALIGNDOWN(p, align)	((ulong)(p) & ~((align)-1))

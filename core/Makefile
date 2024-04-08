@@ -8,3 +8,4 @@ obj-1 += sysmem.o kalloc.o
 obj-1 += param.o init.o
 obj-1 += mm.o
 obj-1 += fault.o
+obj-1 += timer.o

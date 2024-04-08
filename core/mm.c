@@ -96,7 +96,7 @@ VasPageWalk(VAS *vas, ulong va, bool allocpgt)
 }
 
 static void
-VasMapPages(VAS *vas, ulong va, PHYSADDR pa, ulong size, PTEFLAGS flags)
+VasMapPages(VAS *vas, ulong va, PHYSADDR pa, ulong size, PTEFLAGS flags, bool remap)
 {
 	PTE *pte;
 
@@ -108,7 +108,7 @@ VasMapPages(VAS *vas, ulong va, PHYSADDR pa, ulong size, PTEFLAGS flags)
 		{
 			panic("null pte %p", va);
 		}
-		if (PPresent(*pte))
+		if (!remap && PPresent(*pte))
 		{
 			panic("this entry has been used: va %p", va);
 		}
@@ -143,7 +143,29 @@ KAddrwalk(ulong va)
 void
 KvasMapPage(void *va, PHYSADDR pa, PTEFLAGS flags)
 {
-	VasMapPages(&kernvas, (ulong)va, pa, PAGESIZE, flags);
+	VasMapPages(&kernvas, (ulong)va, pa, PAGESIZE, flags, false);
+}
+
+static void
+KRemap(void *va, PHYSADDR pa, PTEFLAGS flags)
+{
+	VasMapPages(&kernvas, (ulong)va, pa, PAGESIZE, flags, true);
+}
+
+void *
+KIOmap(PHYSADDR pa, ulong nbytes)
+{
+	void *va;
+	PTEFLAGS flags = PTEFLAG_RW | PTEFLAG_NOCACHE;
+
+	// TODO: virtualalloc
+	va = Alloc();
+	if (!va)
+	{
+		return NULL;
+	}
+
+	KRemap(va, pa, flags);
 }
 
 static void INIT

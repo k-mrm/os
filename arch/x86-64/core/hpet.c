@@ -29,17 +29,70 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <akari/sysmem.h>
+#include <akari/timer.h>
+#include <akari/printk.h>
+#include <akari/kalloc.h>
+#include <akari/mm.h>
+
+#define KPREFIX		"HPET:"
+
+#include <akari/log.h>
 
 #include "hpet.h"
 
-void INIT
-HpetInit(void)
+typedef struct HPETDEV	HPETDEV;
+
+/*
+ * HPET Device
+ */
+struct HPETDEV
 {
-	;
+	void *Base;
+	PHYSADDR BasePa;
+};
+
+int INIT
+HpetProbe(TIMER *tm)
+{
+	HPETDEV *hpet = tm->Device;	
+	void *base;
+
+	base = KIOmap(hpet->BasePa, 1024);
+	if (!base)
+	{
+		return -1;
+	}
+
+	hpet->Base = base;
+
+	KLOG("%s Probed\n", tm->Name);
+
+	return 0;
 }
 
+static TIMER tmhpet = {
+	.Probe = HpetProbe,
+};
+
 void INIT
-HpetPreInit()
+HpetInit(PHYSADDR baseaddr, int n)
 {
-	;
+	HPETDEV *dev;
+
+	ReserveMem(baseaddr, 1024);
+
+	dev = BootmemAlloc(sizeof *dev, _Alignof(*dev));
+
+	if (!dev)
+	{
+		return;
+	}
+
+	dev->BasePa = baseaddr;
+
+	tmhpet.Device = dev;
+	sprintf(tmhpet.Name, "HPET%d", n);	
+
+	NewTimer(&tmhpet);
 }

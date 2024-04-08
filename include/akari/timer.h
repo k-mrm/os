@@ -27,44 +27,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _TIMER_H
+#define _TIMER_H
+
 #include <akari/types.h>
 #include <akari/compiler.h>
-#include <akari/timer.h>
-#include <akari/panic.h>
 
-TIMER *SysTimer;
+typedef struct TIMER		TIMER;
 
-static TIMER *tdb[16];
-static int ntdb = 0;
-
-void INIT
-TimerInit(void)
+struct TIMER
 {
-	TIMER *t;
-	int err;
+	void *Device;
+	char Name[16];
 
-	for (int i = 0; i < ntdb; i++)
-	{
-		t = tdb[i];
-		if (t && t->Probe)
-		{
-			err = t->Probe(t);
-			if (!err)
-			{
-				SysTimer = t;
-				break;
-			}
-		}
-	}
+	int (*Probe)(TIMER *);
+};
 
-	if (!SysTimer)
-	{
-		panic("No TIMER");
-	}
-}
+void TimerInit(void) INIT;
+void NewTimer(TIMER *timer) INIT;
 
-void INIT
-NewTimer(TIMER *tm)
-{
-	tdb[ntdb++] = tm;
-}
+#endif	// _TIMER_H

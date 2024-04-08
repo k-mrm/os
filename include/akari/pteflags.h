@@ -40,6 +40,8 @@ enum PTEFLAGS
 	PTEFLAG_RW	= (1 << 2),
 	PTEFLAG_X	= (1 << 3),
 	PTEFLAG_USER	= (1 << 4),
+
+	PTEFLAG_NOCACHE	= (1ul << 31),
 };
 
 #define NORMAL_PTE(_flags)	(!((_flags) & 1))

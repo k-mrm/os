@@ -210,13 +210,18 @@ AcpiHpetInit(void)
 
 	if (hpet->Address.Space != ACPI_SPACE_SYSTEM_MEMORY)
 	{
-		KLOG("HPET address space is not memory, aborted\n");
+		KLOG("HPET address space is not memory\n");
+		return;
+	}
+	if (!hpet->Address.Address)
+	{
+		KLOG("HPET address is invalid\n");
 		return;
 	}
 
-	KLOG("hpet register @%p\n", hpet->Address.Address);
+	KLOG("HPET%d register @%p\n", hpet->Number, hpet->Address.Address);
 
-	HpetPreInit();
+	HpetInit(hpet->Address.Address, hpet->Number);
 }
 
 static void INIT

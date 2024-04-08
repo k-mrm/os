@@ -33,4 +33,6 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 
+void HpetInit(PHYSADDR baseaddr, int n) INIT;
+
 #endif	// _X86_CORE_HPET_H
