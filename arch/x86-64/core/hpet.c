@@ -45,6 +45,8 @@
 
 #define HPET_ID			0x0
 #define HPET_CLK_PERIOD		0x4
+#define HPET_GCR		0x10
+#define HPET_MCR		0xf0
 
 typedef struct HPETDEV	HPETDEV;
 
@@ -58,7 +60,7 @@ struct HPETDEV
 	
 	bool Cnt64;
 	uint nChannel;
-	uint Period;	// 10(^-15) s	
+	uint Periodfs;	// 10(^-15) s	
 };
 
 static inline void
@@ -73,12 +75,72 @@ HpetRd32(HPETDEV *hpet, ulong offset)
 	return *(volatile u32 *)(hpet->Base + offset);
 }
 
+static inline u64
+HpetRd64(HPETDEV *hpet, ulong offset)
+{
+	return *(volatile u64 *)(hpet->Base + offset);
+}
+
+static void
+HpetCtrl(HPETDEV *hpet, bool en)
+{
+	u32 gcr;
+
+	gcr = HpetRd32(hpet, HPET_GCR);
+
+	if (!!(gcr & 1) == en)
+	{
+		return;
+	}
+
+	gcr |= en ? 1 : 0;
+
+	HpetWr32(hpet, HPET_GCR, gcr);
+}
+
+#define USEC2FSEC	1000000000
+static ulong
+HpetuSec2Period(TIMER *tm, uint usec)
+{
+	HPETDEV *hpet = tm->Device;
+	ulong fsec = (ulong)usec * USEC2FSEC;
+	ulong period = fsec / hpet->Periodfs;
+
+	return period;
+}
+
+static ulong
+HpetGetCounter(HPETDEV *hpet)
+{
+	return HpetRd64(hpet, HPET_MCR);
+}
+
+static ulong
+HpetReadCounterRaw(TIMER *tm)
+{
+	return HpetGetCounter(tm->Device);
+}
+
+static bool
+HpetIsDead(HPETDEV *hpet)
+{
+	u64 now, after;
+
+	now = HpetGetCounter(hpet);
+	for (int i = 0; i < 1000; i++)	// busy loop
+		;
+	after = HpetGetCounter(hpet);
+
+	return now >= after;
+}
+
 int INIT
 HpetProbe(TIMER *tm)
 {
 	HPETDEV *hpet = tm->Device;
 	u32 id;
 	u32 clkperiod;
+	bool dead;
 	void *base;
 
 	base = KIOmap(hpet->BasePa, HPET_MMIO_SIZE);
@@ -89,21 +151,40 @@ HpetProbe(TIMER *tm)
 
 	hpet->Base = base;
 
+	HpetCtrl(hpet, false);
+
 	id = HpetRd32(hpet, HPET_ID);
 	clkperiod = HpetRd32(hpet, HPET_CLK_PERIOD);
 
 	hpet->Cnt64 = !!(id & (1 << 13));
 	hpet->nChannel = (id >> 8) & 0x1f;
-	hpet->Period = clkperiod;
+	hpet->Periodfs = clkperiod;
 
 	KLOG("%s: %d channel(s) clock period: %d ns %d bit counter\n",
 	     tm->Name, hpet->nChannel, clkperiod / 1000000, hpet->Cnt64 ? 64 : 32);
 
+	HpetCtrl(hpet, true);
+
+	KDBG("HPET %p\n", HpetGetCounter(hpet));
+
+	dead = HpetIsDead(hpet);
+	if (dead)
+	{
+		KLOG("%s: Dead HPET\n", tm->Name);
+		goto err;
+	}
+
 	return 0;
+
+err:
+	HpetCtrl(hpet, false);
+	return -1;
 }
 
 static TIMER tmhpet = {
 	.Probe = HpetProbe,
+	.ReadCounterRaw = HpetReadCounterRaw,
+	.uSec2Period = HpetuSec2Period,
 };
 
 void INIT

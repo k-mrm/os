@@ -37,6 +37,24 @@ TIMER *SysTimer;
 static TIMER *tdb[16];
 static int ntdb = 0;
 
+void
+mSleep(uint nsec)
+{
+	;
+}
+
+void
+uSleep(uint usec)
+{
+	ulong now, after;
+
+	now = SysTimer->ReadCounterRaw(SysTimer);
+	after = now + SysTimer->uSec2Period(SysTimer, usec);
+
+	while (SysTimer->ReadCounterRaw(SysTimer) < after)
+		;
+}
+
 void INIT
 TimerInit(void)
 {

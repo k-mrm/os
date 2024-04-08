@@ -75,6 +75,9 @@ KernelMain(void)
 	TTYInit();
 	TimerInit();
 
+	KDBG("sleeptest\n");
+	uSleep(2000 * 1000);
+
 #ifdef DBGHELLO
 	KDBG("Kernel Hello!\n");
 #endif	// DBGHELLO
