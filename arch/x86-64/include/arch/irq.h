@@ -27,29 +27,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TIMER_H
-#define _TIMER_H
+#ifndef _ARCH_IRQ_H
+#define _ARCH_IRQ_H
 
-#include <akari/types.h>
-#include <akari/compiler.h>
+void ArchIrqInit(void);
 
-typedef struct TIMER		TIMER;
-
-struct TIMER
-{
-	void *Device;
-	char Name[16];
-
-	int (*Probe)(TIMER *tm);
-	ulong (*uSec2Period)(TIMER *tm, uint usec);
-	ulong (*ReadCounterRaw)(TIMER *tm);
-	int (*IrqHandler)(TIMER *tm);
-};
-
-void mSleep(uint msec);
-void uSleep(uint usec);
-
-void TimerInit(void) INIT;
-void NewTimer(TIMER *timer) INIT;
-
-#endif	// _TIMER_H
+#endif	// _ARCH_IRQ_H

@@ -27,29 +27,112 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TIMER_H
-#define _TIMER_H
-
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <akari/panic.h>
+#include <akari/kalloc.h>
+#include <akari/mm.h>
 
-typedef struct TIMER		TIMER;
+#define KPREFIX		"xapic:"
 
-struct TIMER
+#include <akari/log.h>
+#include <cpuid.h>
+#include <msr.h>
+
+#include "apic.h"
+
+#define XAPIC_ID		0x020
+#define XAPIC_VER		0x030
+#define XAPIC_TPR		0x080
+#define XAPIC_EOI		0x0b0
+#define XAPIC_ESR		0x280
+#define XAPIC_ICR_LOW		0x300
+#define XAPIC_ICR_HIGH		0x310
+
+static PHYSADDR XapicBasePa;
+static volatile void *Xapic;
+
+static inline u32
+XapicReadRaw(u32 off)
 {
-	void *Device;
-	char Name[16];
+	return *(volatile u32 *)(Xapic + off);
+}
 
-	int (*Probe)(TIMER *tm);
-	ulong (*uSec2Period)(TIMER *tm, uint usec);
-	ulong (*ReadCounterRaw)(TIMER *tm);
-	int (*IrqHandler)(TIMER *tm);
+static inline void
+XapicWriteRaw(u32 off, u32 val)
+{
+	*(volatile u32 *)(Xapic + off) = val;
+}
+
+static u32
+XapicRead(u32 reg)
+{
+	u32 offset;
+
+	return XapicReadRaw(offset);
+}
+
+static void
+XapicWrite(u32 reg, u32 val)
+{
+	u32 offset;
+
+	XapicWriteRaw(offset, val);
+
+	// wait for completion
+	XapicReadRaw(XAPIC_ID);
+}
+
+static void
+EnableXapic(void)
+{
+	u64 apicbase;
+
+	apicbase = Rdmsr64(IA32_APIC_BASE);
+
+	if (apicbase & IA32_APIC_BASE_APIC_GLOBAL_ENABLE)
+	{
+		return;
+	}
+
+	apicbase |= IA32_APIC_BASE_APIC_GLOBAL_ENABLE;
+
+	Wrmsr64(IA32_APIC_BASE, apicbase);
+}
+
+static void
+XapicSendIPI(uint n)
+{
+	;
+}
+
+static u32
+ApicBaseAddr(void)
+{
+	u64 apicbase;
+
+	apicbase = Rdmsr64(IA32_APIC_BASE);
+
+	return (apicbase & IA32_APIC_BASE_APIC_BASE_MASK);
+}
+
+static APIC XapicOps = {
+	.Read = XapicRead,
+	.Write = XapicWrite,
 };
 
-void mSleep(uint msec);
-void uSleep(uint usec);
+APIC *
+XapicInit(void)
+{
+	EnableXapic();
+	XapicBasePa = ApicBaseAddr();
 
-void TimerInit(void) INIT;
-void NewTimer(TIMER *timer) INIT;
+	Xapic = KIOmap(XapicBasePa, PAGESIZE);
 
-#endif	// _TIMER_H
+	if (!Xapic)
+	{
+		return NULL;
+	}
+
+	return &XapicOps;
+}

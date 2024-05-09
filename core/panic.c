@@ -33,7 +33,7 @@
 #include <akari/panic.h>
 
 void NORETURN
-panic(char *msg, ...)
+Panic(char *msg, ...)
 {
 	va_list ap;
 	char buf[256] = {0};

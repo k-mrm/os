@@ -121,14 +121,22 @@ HpetReadCounterRaw(TIMER *tm)
 	return HpetGetCounter(tm->Device);
 }
 
+static int
+HpetIrq(TIMER *tm)
+{
+	return 1;
+}
+
 static bool
 HpetIsDead(HPETDEV *hpet)
 {
 	u64 now, after;
 
 	now = HpetGetCounter(hpet);
+
 	for (int i = 0; i < 1000; i++)	// busy loop
 		;
+
 	after = HpetGetCounter(hpet);
 
 	return now >= after;
@@ -168,6 +176,7 @@ HpetProbe(TIMER *tm)
 	KDBG("HPET %p\n", HpetGetCounter(hpet));
 
 	dead = HpetIsDead(hpet);
+
 	if (dead)
 	{
 		KLOG("%s: Dead HPET\n", tm->Name);
@@ -185,6 +194,7 @@ static TIMER tmhpet = {
 	.Probe = HpetProbe,
 	.ReadCounterRaw = HpetReadCounterRaw,
 	.uSec2Period = HpetuSec2Period,
+	.IrqHandler = HpetIrq,
 };
 
 void INIT

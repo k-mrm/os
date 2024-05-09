@@ -185,4 +185,6 @@ struct HPET
 	u8 Flags;
 } PACKED;
 
+void AcpiInit(void) INIT;
+
 #endif	// _X86_ACPI_H

@@ -37,6 +37,6 @@ PageFault(PAGEFAULT *pf)
 {
 	if (!pf->User)
 	{
-		panic("Page Fault occured @%p", pf->FaultAddr);
+		Panic("Page Fault occured @%p", pf->FaultAddr);
 	}
 }

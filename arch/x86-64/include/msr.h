@@ -40,6 +40,11 @@
 #define IA32_EFER_FFXSR		(1 << 14)
 #define IA32_EFER_TCE		(1 << 15)
 
+#define IA32_APIC_BASE		0x1b
+#define IA32_APIC_BASE_ENABLE_X2APIC		0x400
+#define IA32_APIC_BASE_APIC_GLOBAL_ENABLE	0x800
+#define IA32_APIC_BASE_APIC_BASE_MASK		0xfffffffffffff000ull
+
 #ifndef __ASSEMBLER__
 
 #include <akari/types.h>

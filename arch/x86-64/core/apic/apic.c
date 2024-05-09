@@ -27,29 +27,85 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TIMER_H
-#define _TIMER_H
-
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <akari/panic.h>
 
-typedef struct TIMER		TIMER;
+#define KPREFIX		"apic:"
 
-struct TIMER
+#include <akari/log.h>
+#include <cpuid.h>
+
+#include "apic.h"
+
+#define ID		0x020
+#define VER		0x030
+#define TPR		0x080
+#define EOI		0x0b0
+#define ESR		0x280
+#define ICR_LOW		0x300
+#define ICR_HIGH	0x310
+
+APIC *Apic;
+
+static bool
+XapicSupported(void)
 {
-	void *Device;
-	char Name[16];
+	u32 a, b, c, d;
 
-	int (*Probe)(TIMER *tm);
-	ulong (*uSec2Period)(TIMER *tm, uint usec);
-	ulong (*ReadCounterRaw)(TIMER *tm);
-	int (*IrqHandler)(TIMER *tm);
-};
+	Cpuid(CPUID_1, &a, &b, &c, &d);
 
-void mSleep(uint msec);
-void uSleep(uint usec);
+	return !!(d & CPUID_1_EDX_APIC);
+}
 
-void TimerInit(void) INIT;
-void NewTimer(TIMER *timer) INIT;
+static bool
+X2apicSupported(void)
+{
+	u32 a, b, c, d;
 
-#endif	// _TIMER_H
+	Cpuid(CPUID_1, &a, &b, &c, &d);
+
+	return !!(c & CPUID_1_ECX_X2APIC);
+}
+
+static void INIT
+ApicClockInit(void)
+{
+	;
+}
+
+void INIT
+ApicInitBsp(void)
+{
+	if (X2apicSupported())
+	{
+		KDBG("Kernel use x2apic\n");
+
+		// Apic = X2apicInit();
+	}
+
+	if (!Apic && XapicSupported())
+	{
+		KDBG("Kernel use xapic\n");
+
+		Apic = XapicInit();
+	}
+
+	if (!Apic)
+	{
+		Panic("No apic");
+	}
+
+	// Clear Error Status
+	Apic->Write(ESR, 0);
+
+	Apic->Write(TPR, 0);
+
+	ApicClockInit();
+}
+
+void INIT
+ApicInitAp(void)
+{
+	;
+}

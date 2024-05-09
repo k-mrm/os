@@ -29,11 +29,21 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <arch/irq.h>
 
+#include "apic/apic.h"
 #include "trap.h"
+
+void
+ArchIrqInit(void)
+{
+	ApicInitBsp();
+}
 
 int
 X86Interrupt(X86TRAPFRAME *tf)
 {
+	// Init LocalAPIC
+
 	return 0;
 }

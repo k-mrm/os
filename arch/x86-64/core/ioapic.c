@@ -27,29 +27,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TIMER_H
-#define _TIMER_H
-
 #include <akari/types.h>
 #include <akari/compiler.h>
 
-typedef struct TIMER		TIMER;
-
-struct TIMER
+void INIT
+IoapicInit()
 {
-	void *Device;
-	char Name[16];
-
-	int (*Probe)(TIMER *tm);
-	ulong (*uSec2Period)(TIMER *tm, uint usec);
-	ulong (*ReadCounterRaw)(TIMER *tm);
-	int (*IrqHandler)(TIMER *tm);
-};
-
-void mSleep(uint msec);
-void uSleep(uint usec);
-
-void TimerInit(void) INIT;
-void NewTimer(TIMER *timer) INIT;
-
-#endif	// _TIMER_H
+	;
+}

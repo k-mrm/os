@@ -225,6 +225,12 @@ AcpiHpetInit(void)
 }
 
 static void INIT
+ApicParseIoapic(MADT_IOAPIC *ioapic)
+{
+	KLOG("IOAPIC%d at %p\n", ioapic->IoapicId, ioapic->IoapicAddr);
+}
+
+static void INIT
 ApicParseLocalX2apic(MADT_LOCAL_X2APIC *x2apic)
 {
 	KLOG("x2apic Processor %d found %d %d\n", x2apic->X2apicId, x2apic->AcpiId, x2apic->Flags);
@@ -267,6 +273,7 @@ AcpiMadtInit(void)
 			ApicParseLocalapic((MADT_LOCALAPIC *)ent);
 			break;
 		case APIC_TYPE_IOAPIC:
+			ApicParseIoapic((MADT_IOAPIC *)ent);
 			break;
 		case APIC_TYPE_LOCAL_X2APIC:
 			ApicParseLocalX2apic((MADT_LOCAL_X2APIC *)ent);
@@ -295,7 +302,7 @@ AcpiInit(void)
 		goto found;
 	}
 
-	panic("no acpi table");
+	Panic("no acpi table");
 found:
 	KLOG("found acpi table version%d\n", rsdpver);
 	KLOG("acpi (%s %s) rsdt %p\n", rsdp->Signature, rsdp->Oemid, rsdp->RsdtAddress);

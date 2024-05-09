@@ -54,6 +54,7 @@ FindX86Cpu(char *vendor)
 	     c++)
 	{
 		id = c->Id;
+
 		while (*id)
 		{
 			if (!strcmp(*id, vendor))
@@ -64,7 +65,7 @@ FindX86Cpu(char *vendor)
 		}
 	}
 
-	panic("cannot find processor");
+	Panic("cannot find processor");
 }
 
 void INIT

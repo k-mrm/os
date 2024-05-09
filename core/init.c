@@ -34,6 +34,7 @@
 #include <akari/panic.h>
 #include <akari/mm.h>
 #include <akari/timer.h>
+#include <akari/irq.h>
 #include <arch/memlayout.h>
 
 #define KPREFIX	"init:"
@@ -72,15 +73,21 @@ KernelMain(void)
 
 	KallocInit();
 
+	IrqInit();
 	TTYInit();
 	TimerInit();
 
 	KDBG("sleeptest\n");
-	uSleep(2000 * 1000);
+	mSleep(1000);
+	KDBG("1 ");
+	mSleep(1000);
+	KDBG("2 ");
+	mSleep(1000);
+	KDBG("3\n");
 
 #ifdef DBGHELLO
 	KDBG("Kernel Hello!\n");
 #endif	// DBGHELLO
 
-	panic("KernelMain Exit");
+	Panic("KernelMain Exit");
 }

@@ -106,11 +106,11 @@ VasMapPages(VAS *vas, ulong va, PHYSADDR pa, ulong size, PTEFLAGS flags, bool re
 
 		if (!pte)
 		{
-			panic("null pte %p", va);
+			Panic("null pte %p", va);
 		}
 		if (!remap && PPresent(*pte))
 		{
-			panic("this entry has been used: va %p", va);
+			Panic("this entry has been used: va %p", va);
 		}
 
 		ArchSetPteLeaf(pte, pa, flags);
@@ -179,11 +179,11 @@ InitKvas(void)
 
 	if (!kernvas.Pgdir)
 	{
-		panic("NULL pgdir");
+		Panic("NULL pgdir");
 	}
 	if (!PAGEALIGNED(kernvas.Pgdir))
 	{
-		panic("pgdir must be page-aligned");
+		Panic("pgdir must be page-aligned");
 	}
 
 	memset(kernvas.Pgdir, 0, PAGESIZE);

@@ -283,12 +283,12 @@ Trap(X86TRAPFRAME *tf)
 		X86PageFault(tf);
 		break;
 	case E_GP:
-		panic("GP");
+		Panic("GP");
 	default:
 		intr = X86Interrupt(tf);
 		if (!intr)
 		{
-			panic("unknown trap");
+			Panic("unknown trap");
 		}
 		break;
 	}

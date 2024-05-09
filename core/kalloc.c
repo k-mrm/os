@@ -250,7 +250,7 @@ InitPageBlock(MEMBLOCK *block)
 	pb = NewPageBlock();
 	if (!pb)
 	{
-		panic("null page block");
+		Panic("null page block");
 	}
 
 	pb->Base = PAGEALIGN(block->Base);
@@ -260,7 +260,7 @@ InitPageBlock(MEMBLOCK *block)
 
 	if (!pb->Pages)
 	{
-		panic("initpageblock failed\n");
+		Panic("initpageblock failed\n");
 	}
 }
 
@@ -320,7 +320,7 @@ KallocInitEarly(ulong start, ulong end)
 
 	if (npages == 0)
 	{
-		panic("system has no memory!");
+		Panic("system has no memory!");
 	}
 }
 

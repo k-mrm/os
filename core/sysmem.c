@@ -232,7 +232,7 @@ MemInsertBlock(MEMCHUNK *c, uint idx, PHYSADDR start, ulong size)
 
 	if (c->nBlock >= 32)
 	{
-		panic("nBlock > 32");
+		Panic("nBlock > 32");
 	}
 
 	memmove(c->Block + idx + 1, c->Block + idx, (c->nBlock - idx) * sizeof(MEMBLOCK));

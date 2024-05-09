@@ -32,15 +32,19 @@
 #include <akari/timer.h>
 #include <akari/panic.h>
 
+#define MSEC2USEC	1000
+
 TIMER *SysTimer;
 
 static TIMER *tdb[16];
 static int ntdb = 0;
 
 void
-mSleep(uint nsec)
+mSleep(uint msec)
 {
-	;
+	uint usec = msec * MSEC2USEC;
+
+	uSleep(usec);
 }
 
 void
@@ -77,7 +81,7 @@ TimerInit(void)
 
 	if (!SysTimer)
 	{
-		panic("No TIMER");
+		Panic("No TIMER");
 	}
 }
 

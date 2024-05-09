@@ -162,7 +162,7 @@ x86Main(MULTIBOOT_INFO *mb)
 
 // ap main
 void NORETURN
-kmainap(void)
+X86MainAp(void)
 {
 	for (;;)
 	{
