@@ -3,8 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
+ * * 1. Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -31,13 +30,28 @@
 #include <akari/compiler.h>
 #include <akari/timer.h>
 #include <akari/panic.h>
+#include <akari/cpu.h>
+
+#include <arch/cpu.h>
 
 #define MSEC2USEC	1000
 
-TIMER *SysTimer;
+TIMER *STimer;
 
-static TIMER *tdb[16];
+TIMER *Timer PERCPU;
+EVENTTIMER *EventTimer PERCPU;
+
+static TIMER *tdbGlobal[16];
 static int ntdb = 0;
+
+static EVENTTIMER *etdbGlobal[16];
+static int netdb = 0;
+
+static inline TIMER *
+SysTimer(void)
+{
+	return STimer;
+}
 
 void
 mSleep(uint msec)
@@ -50,43 +64,92 @@ mSleep(uint msec)
 void
 uSleep(uint usec)
 {
+	TIMER *timer = SysTimer();
 	ulong now, after;
 
-	now = SysTimer->ReadCounterRaw(SysTimer);
-	after = now + SysTimer->uSec2Period(SysTimer, usec);
+	now = timer->ReadCounterRaw(timer);
+	after = now + timer->uSec2Period(timer, usec);
 
-	while (SysTimer->ReadCounterRaw(SysTimer) < after)
+	while (timer->ReadCounterRaw(timer) < after)
 		;
 }
 
-void INIT
-TimerInit(void)
+static void
+GlobalEventTimerInit(void)
+{
+	EVENTTIMER *et;
+	int err;
+
+	for (int i = 0; i < netdb; i++)
+	{
+		et = etdbGlobal[i];
+		if (et && et->Probe)
+		{
+			err = et->Probe(et);
+			if (!err)
+			{
+				break;
+			}
+		}
+	}
+}
+
+static void
+GlobalTimerInit(void)
 {
 	TIMER *t;
 	int err;
 
 	for (int i = 0; i < ntdb; i++)
 	{
-		t = tdb[i];
+		t = tdbGlobal[i];
 		if (t && t->Probe)
 		{
 			err = t->Probe(t);
 			if (!err)
 			{
-				SysTimer = t;
+				STimer = t;
 				break;
 			}
 		}
 	}
+}
 
-	if (!SysTimer)
+void INIT
+TimerInit(void)
+{
+	GlobalTimerInit();
+	GlobalEventTimerInit();
+}
+
+void INIT
+TimerInitCpu(void)
+{
+	;
+}
+
+void INIT
+NewEventTimer(EVENTTIMER *et)
+{
+	if (et->Global)
 	{
-		Panic("No TIMER");
+		etdbGlobal[netdb++] = et;
+	}
+	else
+	{
+		// TODO
 	}
 }
 
 void INIT
 NewTimer(TIMER *tm)
 {
-	tdb[ntdb++] = tm;
+	if (tm->Global)
+	{
+		tdbGlobal[ntdb++] = tm;
+	}
+	else
+	{
+		// TODO
+	}
 }

@@ -34,22 +34,38 @@
 #include <akari/compiler.h>
 
 typedef struct TIMER		TIMER;
+typedef struct EVENTTIMER	EVENTTIMER;
 
 struct TIMER
 {
 	void *Device;
 	char Name[16];
+	bool Global;
 
 	int (*Probe)(TIMER *tm);
+	void (*Disable)(TIMER *tm);
+
 	ulong (*uSec2Period)(TIMER *tm, uint usec);
 	ulong (*ReadCounterRaw)(TIMER *tm);
-	int (*IrqHandler)(TIMER *tm);
+};
+
+struct EVENTTIMER
+{
+	void *Device;
+	char Name[16];
+	bool Global;
+
+	int (*Probe)(EVENTTIMER *et);
+	void (*Disable)(EVENTTIMER *et);
+
+	int (*Irq)(EVENTTIMER *et);
 };
 
 void mSleep(uint msec);
 void uSleep(uint usec);
 
 void TimerInit(void) INIT;
-void NewTimer(TIMER *timer) INIT;
+void NewTimer(TIMER *tm) INIT;
+void NewEventTimer(EVENTTIMER *et) INIT;
 
 #endif	// _TIMER_H

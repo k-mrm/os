@@ -31,5 +31,38 @@
 #define _ARCH_CPU_H
 
 #include <akari/types.h>
+#include <akari/cpu.h>
+#include <akari/compiler.h>
+
+// #define PERCPU_ENABLE
+
+// PERCPU data
+
+#ifdef PERCPU_ENABLE
+
+#define PERCPU		SECTION(".data.percpu")
+
+extern char __percpu_data[];
+extern char __percpu_data_e[];
+
+extern void *__PerCpuPtr[NCPU];
+
+#define PERCPU_VAR_OFFSET(_v)	((ulong)&(_v) - (ulong)__percpu_data)
+
+#define CPU_VAR(_v, _cpu)	(*(typeof(_v) *)(__PerCpuPtr[(_cpu)] + PERCPU_VAR_OFFSET(_v)))
+
+#define MYCPU(_v)		CPU_VAR(_v, currentcpu)
+
+#else
+
+#define PERCPU
+
+#define PERCPU_VAR_OFFSET(_v)
+#define CPU_VAR(_v, _cpu)	_v
+#define MYCPU(_v)		_v
+
+#endif	// PERCPU_ENABLE
+
+void InitPerCpu(void) INIT;
 
 #endif	// _ARCH_CPU_H

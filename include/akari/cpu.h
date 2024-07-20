@@ -31,8 +31,19 @@
 #define _CPU_H
 
 #include <akari/types.h>
-#include <arch/cpu.h>
+#include <akari/compiler.h>
 
-#define cpuid
+#define NCPU		8
+
+extern char __percpu_data[];
+extern char __percpu_data_e[];
+
+// for generic
+extern void *__CpuPtr[NCPU];
+
+#define __PERCPU_DATA_OFFSET(_v)	\
+	(((void *)&(_v)) - __percpu_data)
+
+#define MY(_v)	
 
 #endif	// _CPU_H

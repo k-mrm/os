@@ -28,55 +28,41 @@
  */
 
 #include <akari/types.h>
-#include <akari/sysmem.h>
 #include <akari/compiler.h>
-#include <akari/mm.h>
-#include <akari/kalloc.h>
-#include <arch/mm.h>
-#include <arch/memlayout.h>
-#include <msr.h>
+#include "seg.h"
 
-#include "mm.h"
+const ulong gdt[] = {
+	0x0,			// NULL
+	0x00cf9b000000ffff,	// KCODE32
+	0x00cf93000000ffff,	// KDATA32
+	0x00af9b000000ffff,	// KCODE64
+	0x00af93000000ffff,	// KDATA64
+};
 
-/* Kernel Page Directory */
-static PTE kpml4[512] ALIGNED(PAGESIZE);
-
-extern PTE __boot_pml4[];
-extern PTE __boot_pdpt[];
-
-bool x86nxe;
-
-void
-ArchSwitchVas(VAS *vas)
+static void
+ConfigGdt(void)
 {
-	PHYSADDR pgtpa = V2P(vas->Pgdir);
-
-	if (vas->User)
-	{
-		// TODO
-	}
-
-	asm volatile ("mov %0, %%cr3" :: "r"(pgtpa));
+	;
 }
 
-void
-ArchInitKvas(VAS *kvas)
+static inline void
+LoadGdt(const ulong *gdt, ulong gdtsize)
 {
-	kvas->Pgdir = kpml4;
-	kvas->Level = 4;
-	kvas->LowestLevel = 1;
+	volatile u16 t[5];
+
+	t[0] = (u16)gdtsize - 1;
+	t[1] = (u16)(ulong)gdt;
+	t[2] = (u16)((ulong)gdt >> 16);
+	t[3] = (u16)((ulong)gdt >> 32);
+	t[4] = (u16)((ulong)gdt >> 48);
+
+	asm volatile ("lgdt (%0)" :: "r"(t));
 }
 
 void INIT
-X86mmInit(void)
+GdtInit(void)
 {
-	u32 efer = Rdmsr32(IA32_EFER);
+	ConfigGdt();
 
-	x86nxe = !!(efer & IA32_EFER_NXE);
-}
-
-void INIT
-KillIdmap(void)
-{
-	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
+	LoadGdt(gdt, sizeof gdt);
 }

@@ -9,4 +9,4 @@ obj-1 += mm.o apic.o
 obj-1 += trap.o
 obj-1 += trap-handler.o
 obj-1 += irq.o
-obj-1 += hpet.o
+obj-1 += hpet.o cpu.o

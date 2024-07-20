@@ -191,10 +191,10 @@ err:
 }
 
 static TIMER tmhpet = {
+	.Global = true,
 	.Probe = HpetProbe,
 	.ReadCounterRaw = HpetReadCounterRaw,
 	.uSec2Period = HpetuSec2Period,
-	.IrqHandler = HpetIrq,
 };
 
 void INIT

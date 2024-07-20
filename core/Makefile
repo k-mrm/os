@@ -11,3 +11,4 @@ obj-1 += irq.o
 obj-1 += fault.o
 obj-1 += timer.o
 obj-1 += irqsource.o
+obj-1 += cpu.o

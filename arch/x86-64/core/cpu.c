@@ -28,55 +28,36 @@
  */
 
 #include <akari/types.h>
-#include <akari/sysmem.h>
+#include <akari/cpu.h>
 #include <akari/compiler.h>
-#include <akari/mm.h>
-#include <akari/kalloc.h>
-#include <arch/mm.h>
-#include <arch/memlayout.h>
-#include <msr.h>
+#include <akari/sysmem.h>
+#include <akari/cacheline.h>
 
-#include "mm.h"
+#include <arch/cpu.h>
 
-/* Kernel Page Directory */
-static PTE kpml4[512] ALIGNED(PAGESIZE);
+void *__PerCpuPtr[NCPU];
 
-extern PTE __boot_pml4[];
-extern PTE __boot_pdpt[];
-
-bool x86nxe;
-
-void
-ArchSwitchVas(VAS *vas)
+void INIT
+InitPerCpu(void)
 {
-	PHYSADDR pgtpa = V2P(vas->Pgdir);
+	void *ptr;
+	u64 size = __percpu_data_e - __percpu_data;
 
-	if (vas->User)
+	if (size == 0)
 	{
-		// TODO
+		return;
 	}
 
-	asm volatile ("mov %0, %%cr3" :: "r"(pgtpa));
-}
+	for (int i = 0; i < NCPU; i++)
+	{
+		ptr = BootmemAlloc(size, CACHELINE);
+		if (!ptr)
+		{
+			Panic("cannot init percpu %d");
+		}
 
-void
-ArchInitKvas(VAS *kvas)
-{
-	kvas->Pgdir = kpml4;
-	kvas->Level = 4;
-	kvas->LowestLevel = 1;
-}
+		memcpy(ptr, __percpu_data, size);
 
-void INIT
-X86mmInit(void)
-{
-	u32 efer = Rdmsr32(IA32_EFER);
-
-	x86nxe = !!(efer & IA32_EFER_NXE);
-}
-
-void INIT
-KillIdmap(void)
-{
-	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
+		__PerCpuPtr[i] = ptr;
+	}
 }

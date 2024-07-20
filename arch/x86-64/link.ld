@@ -33,6 +33,11 @@ SECTIONS {
 		__initdata_x86cpu_s = .;
 		KEEP(*(.initdata.x86cpu))
 		__initdata_x86cpu_e = .;
+
+		__percpu_data = .;
+		KEEP(*(.data.percpu))
+		__percpu_data_e = .;
+
 		*(.data .data.*)
 	}
 

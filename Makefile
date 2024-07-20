@@ -52,4 +52,4 @@ qemu-iso: $(iso)
 qemu-gdb: $(iso)
 	$(QEMU) -nographic -drive file=$(iso),format=raw -serial mon:stdio -smp $(NCPU) -m $(MEMSZ) -S -gdb tcp::1234
 
-.PHONY: clean qemu iso
+.PHONY: clean iso

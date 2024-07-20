@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, akarilab.net
+ * Copyright (c) 2023, akarilab.net
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,55 +28,31 @@
  */
 
 #include <akari/types.h>
-#include <akari/sysmem.h>
-#include <akari/compiler.h>
-#include <akari/mm.h>
-#include <akari/kalloc.h>
-#include <arch/mm.h>
-#include <arch/memlayout.h>
-#include <msr.h>
+#include <akari/cpu.h>
+#include <akari/panic.h>
 
-#include "mm.h"
+#define NCPU	8
 
-/* Kernel Page Directory */
-static PTE kpml4[512] ALIGNED(PAGESIZE);
+void *__CpuPtr[NCPU];
 
-extern PTE __boot_pml4[];
-extern PTE __boot_pdpt[];
-
-bool x86nxe;
-
-void
-ArchSwitchVas(VAS *vas)
+void INIT
+InitPerCpuData(void)
 {
-	PHYSADDR pgtpa = V2P(vas->Pgdir);
+	/*
+	void *ptr;
+	u64 size = __percpu_data_e - __percpu_data;
 
-	if (vas->User)
+	for (int i = 0; i < 8; i++)
 	{
-		// TODO
+		ptr = ;
+		if (!ptr)
+		{
+			Panic("cannot init percpu");
+		}
+
+		memcpy(ptr, __percpu_data, size);
+
+		__CpuPtr[i] = ptr;
 	}
-
-	asm volatile ("mov %0, %%cr3" :: "r"(pgtpa));
-}
-
-void
-ArchInitKvas(VAS *kvas)
-{
-	kvas->Pgdir = kpml4;
-	kvas->Level = 4;
-	kvas->LowestLevel = 1;
-}
-
-void INIT
-X86mmInit(void)
-{
-	u32 efer = Rdmsr32(IA32_EFER);
-
-	x86nxe = !!(efer & IA32_EFER_NXE);
-}
-
-void INIT
-KillIdmap(void)
-{
-	__boot_pml4[PIDX(4, KERNLINK_PA)] = 0;
+	*/
 }

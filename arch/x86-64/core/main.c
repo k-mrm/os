@@ -35,6 +35,7 @@
 #include <akari/init.h>
 #include <arch/asm.h>
 #include <arch/memlayout.h>
+#include <arch/cpu.h>
 
 #define KPREFIX	"x86-64/main:"
 
@@ -152,6 +153,8 @@ x86Main(MULTIBOOT_INFO *mb)
 	// Kernel Early Init
 	// KernelEarlyInit();
 	
+	InitPerCpu();
+
 	AcpiInit();
 
 	TrapInit();
