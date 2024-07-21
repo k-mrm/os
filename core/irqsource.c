@@ -30,3 +30,33 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 #include <akari/irqsource.h>
+#include <akari/irq.h>
+
+IRQSOURCE *
+NewIRQSource(void *device, int (*handler)(IRQSOURCE *), int irqno, bool private)
+{
+	IRQSOURCE *irqsrc;
+
+	irqsrc = Alloc();	// XXX: we need malloc!!!
+	
+	if (!irqsrc)
+	{
+		return NULL;
+	}
+
+	irqsrc->Device = device;
+	irqsrc->Handler = handler;
+
+	irqsrc->Irq = NewIRQ(irqno, irqsrc, private);
+
+	if (!irqsrc->Irq)
+	{
+		goto free;
+	}
+
+	return irqsrc;
+
+free:
+	Free(irqsrc);
+	return NULL;
+}

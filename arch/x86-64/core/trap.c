@@ -274,7 +274,7 @@ X86PageFault(X86TRAPFRAME *tf)
 void 
 Trap(X86TRAPFRAME *tf)
 {
-	int intr;
+	int err;
 	KDBG("trap from %d(err=0x%x) %p\n", tf->Trapno, tf->Errcode, tf->Rip);
 
 	switch (tf->Trapno)
@@ -285,8 +285,8 @@ Trap(X86TRAPFRAME *tf)
 	case E_GP:
 		Panic("GP");
 	default:
-		intr = X86Interrupt(tf);
-		if (!intr)
+		err = X86Interrupt(tf);
+		if (err)
 		{
 			Panic("unknown trap");
 		}

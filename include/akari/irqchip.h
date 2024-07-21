@@ -27,29 +27,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _AKARI_IRQCHIP_H
+#define _AKARI_IRQCHIP_H
+
 #include <akari/types.h>
 #include <akari/compiler.h>
-#include <akari/irq.h>
-#include <arch/irq.h>
 
-#include "apic/apic.h"
-#include "trap.h"
+typedef struct IRQCHIP		IRQCHIP;
 
-void
-ArchIrqInit(void)
+struct IRQCHIP
 {
-	// Init LocalAPIC
-	ApicInit0();
-}
+	void *Device;
 
-int
-X86Interrupt(X86TRAPFRAME *tf)
-{
-	int irqno;
+	void (*EOI)(int irqno);
+};
 
-	irqno = tf->Trapno;
-
-	KDBG("IRQ from %d\n", irqno);
-
-	return HandleGenericIRQ(irqno);
-}
+#endif	// _AKARI_IRQCHIP_H

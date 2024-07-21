@@ -32,6 +32,7 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <akari/irqsource.h>
 
 typedef struct TIMER		TIMER;
 typedef struct EVENTTIMER	EVENTTIMER;
@@ -63,7 +64,9 @@ struct EVENTTIMER
 	void (*On)(EVENTTIMER *et);
 	void (*Off)(EVENTTIMER *et);
 
-	// IRQSOURCE *Irq;
+	int (*IRQHandler)(EVENTTIMER *et);
+
+	IRQSOURCE *Irq;
 };
 
 void mSleep(uint msec);
@@ -72,5 +75,7 @@ void uSleep(uint usec);
 void TimerInit(void) INIT;
 void NewTimer(TIMER *tm) INIT;
 void NewEventTimer(EVENTTIMER *et) INIT;
+
+int NewEventTimerIrq(EVENTTIMER *et, int irqno);
 
 #endif	// _TIMER_H

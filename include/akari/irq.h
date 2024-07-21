@@ -32,7 +32,23 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
+#include <akari/irqchip.h>
 
+typedef struct IRQ		IRQ;
+typedef struct IRQSOURCE	IRQSOURCE;
+
+struct IRQ
+{
+	int Irqno;
+
+	IRQCHIP *Chip;
+
+	IRQSOURCE *Src;
+};
+
+IRQ *NewIRQ(int irqno, IRQSOURCE *src, bool priv);
+
+int HandleGenericIRQ(int irqno);
 void IrqInit(void) INIT;
 
 #endif	// _IRQ_H

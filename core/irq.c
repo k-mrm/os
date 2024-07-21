@@ -30,7 +30,73 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 #include <akari/irq.h>
+#include <akari/irqsource.h>
 #include <arch/irq.h>
+
+static IRQ *
+GetIRQ(int irqno)
+{
+	// TODO
+	return NULL;
+}
+
+IRQ *
+NewIRQ(int irqno, IRQSOURCE *src, bool priv)
+{
+	IRQ *irq;
+
+	irq = Alloc();	// XXX: malloc
+	
+	if (!irq)
+	{
+		return NULL;
+	}
+
+	if (irqno < 0)
+	{
+		// TODO: Allocate new irqno
+		return NULL;
+	}
+
+	if (priv)
+	{
+		// TODO
+		irq->Chip = NULL;
+	}
+	else
+	{
+		// TODO
+		irq->Chip = NULL;
+	}
+
+	irq->Irqno = irqno;
+	irq->Src = src;
+
+	return irq;
+}
+
+int
+HandleGenericIRQ(int irqno)
+{
+	IRQ *irq;
+	IRQSOURCE *src;
+	int ret;
+
+	irq = GetIRQ(irqno);
+
+	if (!irq)
+	{
+		return -1;
+	}
+
+	src = irq->Src;
+
+	ret = src->Handler(src);
+
+	// irq->Chip->EOI(irqno);
+
+	return ret;
+}
 
 void INIT
 IrqInit(void)

@@ -74,6 +74,38 @@ uSleep(uint usec)
 		;
 }
 
+int
+EventTimerIrq(IRQSOURCE *irqsrc)
+{
+	EVENTTIMER *et = irqsrc->Device;
+
+	if (et->IRQHandler)
+	{
+		return et->IRQHandler(et);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+int
+NewEventTimerIrq(EVENTTIMER *et, int irqno)
+{
+	IRQSOURCE *irqsrc;
+
+	irqsrc = NewIRQSource(et, EventTimerIrq, irqno, et->Global);
+
+	if (!irqsrc)
+	{
+		return -1;
+	}
+
+	et->Irq = irqsrc;
+
+	return 0;
+}
+
 static void
 GlobalEventTimerInit(void)
 {
@@ -86,8 +118,7 @@ GlobalEventTimerInit(void)
 		if (et && et->Probe)
 		{
 			err = et->Probe(et);
-			if (!err)
-			{
+			if (!err) {
 				break;
 			}
 		}

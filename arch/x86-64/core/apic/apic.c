@@ -32,6 +32,7 @@
 #include <akari/panic.h>
 #include <akari/timer.h>
 #include <akari/sysmem.h>
+#include <akari/irqsource.h>
 
 #define KPREFIX		"apic:"
 
@@ -146,8 +147,13 @@ ApicTimerProbe(EVENTTIMER *et)
 	// test
 	apic->Write(TM_INIT, lt->Freq * 5);
 
-	INTR_ENABLE;
-	// *(volatile int *)(420984) = 0;
+	err = NewEventTimerIrq(et, 0x20);
+
+	if (err)
+	{
+		KDBG("neweventtimerirq\n");
+		return -1;
+	}
 
 	return 0;
 }
@@ -199,6 +205,8 @@ ApicTimerSetPeriod(EVENTTIMER *et, uint ms)
 static int
 ApicTimerIrq(EVENTTIMER *et)
 {
+	KLOG("APIC TIMER IRQ\n");
+
 	// TODO
 	return -1;
 }
@@ -210,6 +218,7 @@ static EVENTTIMER lapictimer = {
 	.Probe = ApicTimerProbe,
 	.On = ApicTimerOn,
 	.Off = ApicTimerOff,
+	.IRQHandler = ApicTimerIrq,
 };
 
 void INIT
