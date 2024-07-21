@@ -59,8 +59,6 @@ ReserveKernelArea(void)
 void INIT NORETURN
 KernelMain(void)
 {
-	ReserveKernelArea();
-
 	/*
 	 * Kernel early mapping is 0-1GiB
 	 */
@@ -74,6 +72,7 @@ KernelMain(void)
 	KallocInit();
 
 	IrqInit();
+
 	TTYInit();
 	TimerInit();
 

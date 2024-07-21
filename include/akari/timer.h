@@ -56,9 +56,14 @@ struct EVENTTIMER
 	bool Global;
 
 	int (*Probe)(EVENTTIMER *et);
-	void (*Disable)(EVENTTIMER *et);
 
-	int (*Irq)(EVENTTIMER *et);
+	uint (*GetPeriod)(EVENTTIMER *et);
+	void (*SetPeriod)(EVENTTIMER *et, uint ms);
+
+	void (*On)(EVENTTIMER *et);
+	void (*Off)(EVENTTIMER *et);
+
+	// IRQSOURCE *Irq;
 };
 
 void mSleep(uint msec);

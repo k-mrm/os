@@ -47,6 +47,8 @@ SYSMEM Sysmem = {
 	.Rsrv.nBlock = 0,
 };
 
+static void DEBUG SysmemDump(void);
+
 /*
  * __MemblockOverlap
  * true: overlapped
@@ -185,9 +187,10 @@ BootmemAlloc(uint nbytes, uint align)
 
 	ReserveMem(pa, nbytes);
 
-	KDBG("alloc bootmem %p bytes: %p-%p %p\n", nbytes, pa, pa + nbytes - 1, P2V(pa));
-
 	va = P2V(pa);
+
+	KDBG("alloc bootmem %p bytes: %p-%p %p\n", nbytes, pa, pa + nbytes - 1, va);
+
 	memset(va, 0, nbytes);
 
 	return va;

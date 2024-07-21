@@ -153,6 +153,8 @@ x86Main(MULTIBOOT_INFO *mb)
 	// Kernel Early Init
 	// KernelEarlyInit();
 	
+	ReserveKernelArea();
+
 	InitPerCpu();
 
 	AcpiInit();

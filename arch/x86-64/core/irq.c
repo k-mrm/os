@@ -37,7 +37,7 @@
 void
 ArchIrqInit(void)
 {
-	ApicInitBsp();
+	ApicInit0();
 }
 
 int

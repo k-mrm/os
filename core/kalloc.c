@@ -47,7 +47,7 @@ typedef struct FREECHUNK	FREECHUNK;
 typedef struct KALLOCBLOCK	KALLOCBLOCK;
 
 PAGEBLOCK PRoot[32];
-uint nPRoot;
+uint nPRoot = 0;
 
 static ulong Earlystart, Earlyend;
 
@@ -310,6 +310,8 @@ KallocInitEarly(ulong start, ulong end)
 	{
 		InitPageBlock(block);
 	}
+
+	*(volatile int *)(0x424324) = 0x1;
 
 	FOREACH_PAGEBLOCK (pblock)
 	{

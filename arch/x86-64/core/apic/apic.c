@@ -30,11 +30,15 @@
 #include <akari/types.h>
 #include <akari/compiler.h>
 #include <akari/panic.h>
+#include <akari/timer.h>
+#include <akari/sysmem.h>
 
 #define KPREFIX		"apic:"
 
 #include <akari/log.h>
 #include <cpuid.h>
+
+#include <arch/cpu.h>
 
 #include "apic.h"
 
@@ -45,8 +49,27 @@
 #define ESR		0x280
 #define ICR_LOW		0x300
 #define ICR_HIGH	0x310
+#define LVT_TIMER	0x320
+#define TM_INIT		0x380
+#define TM_CURRENT	0x390
+#define TM_DIV		0x3e0
 
-APIC *Apic;
+#define LVT_TIMER_INT_MASK		(1 << 16)
+#define LVT_TIMER_ONE_TIME		(0 << 17)
+#define LVT_TIMER_PERIODIC		(1 << 17)
+#define LVT_TIMER_TSC_DEADLINE		(2 << 17)
+
+typedef struct LAPICTIMER	LAPICTIMER;
+
+struct LAPICTIMER
+{
+	APIC *Apic;
+
+	uint Freq;
+	uint Periodms;
+};
+
+APIC *Apic PERCPU;
 
 static bool
 XapicSupported(void)
@@ -68,15 +91,135 @@ X2apicSupported(void)
 	return !!(c & CPUID_1_ECX_X2APIC);
 }
 
-static void INIT
-ApicClockInit(void)
+static int
+ApicTimerMeasureFreq(LAPICTIMER *lt)
 {
-	;
+	APIC *apic = lt->Apic;
+	u32 cnt, cnt2;
+
+	cnt = apic->Read(TM_CURRENT);
+
+	// sleep 1s
+	mSleep(1000);
+
+	cnt2 = apic->Read(TM_CURRENT);
+
+	if (cnt <= cnt2)
+	{
+		KWARN("lapic timer?");
+		return -1;
+	}
+
+	lt->Freq = cnt - cnt2;
+
+	KDBG ("lapic timer %x -> %x freq:%d\n", cnt, cnt2, lt->Freq);
+
+	return 0;
 }
 
-void INIT
-ApicInitBsp(void)
+static int
+ApicTimerProbe(EVENTTIMER *et)
 {
+	LAPICTIMER *lt = et->Device;
+	APIC *apic = lt->Apic;
+	int err;
+	u32 lvt;
+
+	KDBG ("Probe lapic timer: %s\n", et->Name);
+
+	// Enable Timer
+	apic->Write(TM_INIT, 0xffffffff);
+
+	err = ApicTimerMeasureFreq(lt);
+
+	if (err)
+	{
+		return -1;
+	}
+
+	lvt = LVT_TIMER_PERIODIC;
+	lvt |= LVT_TIMER_INT_MASK;
+	lvt |= 0x20;		// periodic mode, vector is 0x20
+
+	apic->Write(LVT_TIMER, lvt);
+
+	// test
+	apic->Write(TM_INIT, lt->Freq * 5);
+
+	*(volatile int *)(420984) = 0;
+
+	// INTR_ENABLE;
+	INTR_DISABLE;
+	// *(volatile int *)(420984) = 0;
+
+	return 0;
+}
+
+static void
+ApicTimerOn(EVENTTIMER *et)
+{
+	LAPICTIMER *lt = et->Device;
+	APIC *apic = lt->Apic;
+	u32 lvt;
+
+	lvt = apic->Read(LVT_TIMER);
+
+	lvt &= ~LVT_TIMER_INT_MASK;	// MASK bit
+
+	apic->Write(LVT_TIMER, lvt);
+}
+
+static void
+ApicTimerOff(EVENTTIMER *et)
+{
+	LAPICTIMER *lt = et->Device;
+	APIC *apic = lt->Apic;
+	u32 lvt;
+
+	lvt = apic->Read(LVT_TIMER);
+
+	lvt |= LVT_TIMER_INT_MASK;	// MASK bit
+
+	apic->Write(LVT_TIMER, lvt);
+}
+
+static uint
+ApicTimerGetPeriod(EVENTTIMER *et)
+{
+	LAPICTIMER *lt = et->Device;
+
+	return lt->Periodms;
+}
+
+static void
+ApicTimerSetPeriod(EVENTTIMER *et, uint ms)
+{
+	LAPICTIMER *lt = et->Device;
+
+	lt->Periodms = ms;
+}
+
+static int
+ApicTimerIrq(EVENTTIMER *et)
+{
+	// TODO
+	return -1;
+}
+
+static EVENTTIMER lapictimer = {
+	.Global = true,
+	.GetPeriod = ApicTimerGetPeriod,
+	.SetPeriod = ApicTimerSetPeriod,
+	.Probe = ApicTimerProbe,
+	.On = ApicTimerOn,
+	.Off = ApicTimerOff,
+};
+
+void INIT
+ApicInit0(void)
+{
+	LAPICTIMER *timer;
+
 	if (X2apicSupported())
 	{
 		KDBG("Kernel use x2apic\n");
@@ -101,7 +244,20 @@ ApicInitBsp(void)
 
 	Apic->Write(TPR, 0);
 
-	ApicClockInit();
+	timer = BootmemAlloc(sizeof *timer, _Alignof(*timer));
+
+	if (!timer)
+	{
+		KWARN("cannot initialize lapic timer\n");
+		return;
+	}
+
+	timer->Apic = Apic;
+
+	lapictimer.Device = timer;
+	sprintf(lapictimer.Name, "LAPICTimer%d", 0);	// TODO: CPUID
+
+	NewEventTimer(&lapictimer);
 }
 
 void INIT

@@ -67,7 +67,7 @@ XapicWriteRaw(u32 off, u32 val)
 static u32
 XapicRead(u32 reg)
 {
-	u32 offset;
+	u32 offset = reg;
 
 	return XapicReadRaw(offset);
 }
@@ -75,7 +75,7 @@ XapicRead(u32 reg)
 static void
 XapicWrite(u32 reg, u32 val)
 {
-	u32 offset;
+	u32 offset = reg;
 
 	XapicWriteRaw(offset, val);
 
@@ -86,7 +86,7 @@ XapicWrite(u32 reg, u32 val)
 static void
 EnableXapic(void)
 {
-	u64 apicbase;
+	ulong apicbase;
 
 	apicbase = Rdmsr64(IA32_APIC_BASE);
 
@@ -109,7 +109,7 @@ XapicSendIPI(uint n)
 static u32
 ApicBaseAddr(void)
 {
-	u64 apicbase;
+	ulong apicbase;
 
 	apicbase = Rdmsr64(IA32_APIC_BASE);
 

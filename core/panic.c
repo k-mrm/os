@@ -31,6 +31,7 @@
 #include <akari/printk.h>
 #include <akari/stdarg.h>
 #include <akari/panic.h>
+#include <arch/cpu.h>
 
 void NORETURN
 Panic(char *msg, ...)
@@ -38,6 +39,8 @@ Panic(char *msg, ...)
 	va_list ap;
 	char buf[256] = {0};
 	int n;
+
+	INTR_DISABLE;
 
 	va_start(ap, msg);
 

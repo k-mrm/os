@@ -36,6 +36,9 @@
 
 // #define PERCPU_ENABLE
 
+#define INTR_DISABLE	asm volatile ("cli");
+#define INTR_ENABLE	asm volatile ("sti");
+
 // PERCPU data
 
 #ifdef PERCPU_ENABLE

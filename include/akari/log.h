@@ -37,6 +37,7 @@
 #endif	// KPREFIX
 
 #define KDBG(fmt, ...)	printk(KPREFIX " [debug] " fmt, ##__VA_ARGS__)
+#define KWARN(fmt, ...)	printk(KPREFIX " [warning] " fmt, ##__VA_ARGS__)
 #define KLOG(fmt, ...)	printk(KPREFIX " " fmt, ##__VA_ARGS__)
 
 #endif	// _LOG_H
