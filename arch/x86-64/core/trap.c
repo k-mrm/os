@@ -223,7 +223,7 @@ LoadIdt(GATEDESC *idt, ulong idtsize)
 	t[3] = (u16)((ulong)idt >> 32);
 	t[4] = (u16)((ulong)idt >> 48);
 
-	asm volatile ("lidt %0" :: "m"(t));
+	asm volatile ("lidt (%0)" :: "r"(t));
 }
 
 static inline void

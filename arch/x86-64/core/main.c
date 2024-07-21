@@ -145,6 +145,8 @@ x86Main(MULTIBOOT_INFO *mb)
 
 	X86mmInit();
 
+	GdtInit();
+
 	/*
 	 * In x86-64, First 1MB is reserved
 	 */

@@ -146,10 +146,7 @@ ApicTimerProbe(EVENTTIMER *et)
 	// test
 	apic->Write(TM_INIT, lt->Freq * 5);
 
-	*(volatile int *)(420984) = 0;
-
-	// INTR_ENABLE;
-	INTR_DISABLE;
+	INTR_ENABLE;
 	// *(volatile int *)(420984) = 0;
 
 	return 0;
