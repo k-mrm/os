@@ -275,7 +275,7 @@ void
 Trap(X86TRAPFRAME *tf)
 {
 	int err;
-	KDBG("trap from %d(err=0x%x) %p\n", tf->Trapno, tf->Errcode, tf->Rip);
+	KDBG("trap from %d %d(err=0x%x) %p\n", tf->R15, tf->Trapno, tf->Errcode, tf->Rip);
 
 	switch (tf->Trapno)
 	{

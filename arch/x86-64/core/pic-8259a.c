@@ -29,70 +29,16 @@
 
 #include <akari/types.h>
 #include <akari/compiler.h>
-#include <akari/init.h>
-#include <akari/kalloc.h>
-#include <akari/panic.h>
-#include <akari/mm.h>
-#include <akari/timer.h>
-#include <akari/irq.h>
-#include <arch/memlayout.h>
-#include <arch/cpu.h>
+#include <arch/asm.h>
+#include "pic-8259a.h"
 
-#define KPREFIX	"init:"
+#define PIC1         0x20
+#define PIC2         0xa0
 
-#include <akari/log.h>
-
+// disable PIC8259A
 void INIT
-ReserveKernelArea(void)
+PIC8259AInit(void)
 {
-	PHYSADDR kstartpa, kendpa;
-	ulong ksize;
-
-	kstartpa = V2P(KernelStart());
-	kendpa = V2P(KernelEnd());
-	ksize = PAGEALIGN(kendpa - kstartpa);
-
-	KDBG("kernel image @%p-%p\n", kstartpa, kendpa);
-
-	ReserveMem(kstartpa, ksize);
-}
-
-void INIT NORETURN
-KernelMain(void)
-{
-	/*
-	 * Kernel early mapping is 0-1GiB
-	 */
-	KallocInitEarly(0x0, 1 * GiB);
-
-	/*
-	 * Make mapping of Kernel Virtual Address Space
-	 */
-	KvasMap();
-
-	KallocInit();
-
-	IrqInit();
-
-	TTYInit();
-	TimerInit();
-
-	KDBG("sleeptest\n");
-	mSleep(1000);
-	KDBG("1 ");
-	mSleep(1000);
-	KDBG("2 ");
-	mSleep(1000);
-	KDBG("3\n");
-
-	INTR_ENABLE;
-
-#ifdef DBGHELLO
-	KDBG("Kernel Hello!\n");
-#endif	// DBGHELLO
-	
-	for (;;)
-		;
-
-	// Panic("KernelMain Exit");
+	outb(PIC1 + 1, 0xff);
+	outb(PIC2 + 1, 0xff);
 }

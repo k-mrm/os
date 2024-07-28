@@ -31,7 +31,12 @@
 #include <akari/compiler.h>
 #include <akari/irq.h>
 #include <akari/irqsource.h>
+#include <akari/kalloc.h>
 #include <arch/irq.h>
+
+#define KPREFIX		"irq:"
+
+#include <akari/log.h>
 
 static IRQ *
 GetIRQ(int irqno)

@@ -121,12 +121,6 @@ HpetReadCounterRaw(TIMER *tm)
 	return HpetGetCounter(tm->Device);
 }
 
-static int
-HpetIrq(TIMER *tm)
-{
-	return 1;
-}
-
 static bool
 HpetIsDead(HPETDEV *hpet)
 {

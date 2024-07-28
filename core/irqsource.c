@@ -31,6 +31,11 @@
 #include <akari/compiler.h>
 #include <akari/irqsource.h>
 #include <akari/irq.h>
+#include <akari/kalloc.h>
+
+#define KPREFIX		"irqsource:"
+
+#include <akari/log.h>
 
 IRQSOURCE *
 NewIRQSource(void *device, int (*handler)(IRQSOURCE *), int irqno, bool private)

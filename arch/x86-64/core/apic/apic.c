@@ -44,21 +44,34 @@
 #include "apic.h"
 
 #define ID		0x020
-#define VER		0x030
-#define TPR		0x080
-#define EOI		0x0b0
-#define ESR		0x280
-#define ICR_LOW		0x300
-#define ICR_HIGH	0x310
-#define LVT_TIMER	0x320
-#define TM_INIT		0x380
-#define TM_CURRENT	0x390
-#define TM_DIV		0x3e0
 
+#define VER		0x030
+
+#define TPR		0x080
+
+#define EOI		0x0b0
+
+#define SPIV		0x0f0
+#define SPIV_APIC_ENABLED	(1 << 8)
+
+#define ESR		0x280
+
+#define ICR_LOW		0x300
+
+#define ICR_HIGH	0x310
+
+#define LVT_TIMER	0x320
 #define LVT_TIMER_INT_MASK		(1 << 16)
 #define LVT_TIMER_ONE_TIME		(0 << 17)
 #define LVT_TIMER_PERIODIC		(1 << 17)
 #define LVT_TIMER_TSC_DEADLINE		(2 << 17)
+
+#define TM_INIT		0x380
+
+#define TM_CURRENT	0x390
+
+#define TM_DIV		0x3e0
+
 
 typedef struct LAPICTIMER	LAPICTIMER;
 
@@ -124,9 +137,14 @@ ApicTimerProbe(EVENTTIMER *et)
 	LAPICTIMER *lt = et->Device;
 	APIC *apic = lt->Apic;
 	int err;
-	u32 lvt;
+	u32 lvt = 0;
 
 	KDBG ("Probe lapic timer: %s\n", et->Name);
+
+	lvt |= LVT_TIMER_INT_MASK;
+	lvt |= 0x40;
+
+	apic->Write(LVT_TIMER, lvt);
 
 	// Enable Timer
 	apic->Write(TM_INIT, 0xffffffff);
@@ -139,15 +157,15 @@ ApicTimerProbe(EVENTTIMER *et)
 	}
 
 	lvt = LVT_TIMER_PERIODIC;
-	lvt |= LVT_TIMER_INT_MASK;
-	lvt |= 0x20;		// periodic mode, vector is 0x20
+	// lvt |= LVT_TIMER_INT_MASK;
+	lvt |= 0x40;		// periodic mode, vector is 0x20
 
 	apic->Write(LVT_TIMER, lvt);
 
 	// test
-	apic->Write(TM_INIT, lt->Freq * 5);
+	apic->Write(TM_INIT, lt->Freq * 3);
 
-	err = NewEventTimerIrq(et, 0x20);
+	err = NewEventTimerIrq(et, 0x40);
 
 	if (err)
 	{
@@ -221,6 +239,40 @@ static EVENTTIMER lapictimer = {
 	.IRQHandler = ApicTimerIrq,
 };
 
+static void
+EnableApic(void)
+{
+	u32 spiv;
+
+	spiv = Apic->Read(SPIV);
+
+	spiv |= SPIV_APIC_ENABLED;
+
+	Apic->Write(SPIV, spiv);
+}
+
+static void
+DisableApic(void)
+{
+	u32 spiv;
+
+	spiv = Apic->Read(SPIV);
+
+	spiv &= ~SPIV_APIC_ENABLED;
+
+	Apic->Write(SPIV, spiv);
+}
+
+static void INIT
+ApicSetSpiv(void)
+{
+	u32 spiv;
+
+	spiv = 0x20;	// vector is 0x20
+
+	Apic->Write(SPIV, spiv);
+}
+
 void INIT
 ApicInit0(void)
 {
@@ -245,10 +297,15 @@ ApicInit0(void)
 		Panic("No apic");
 	}
 
+	// Set Sprious Interrupt Vector
+	ApicSetSpiv();
+
 	// Clear Error Status
 	Apic->Write(ESR, 0);
 
 	Apic->Write(TPR, 0);
+
+	EnableApic();
 
 	timer = BootmemAlloc(sizeof *timer, _Alignof(*timer));
 

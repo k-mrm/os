@@ -33,11 +33,18 @@
 #include <arch/irq.h>
 
 #include "apic/apic.h"
+#include "pic-8259a.h"
 #include "trap.h"
+
+#define KPREFIX		"x86/irq:"
+
+#include <akari/log.h>
 
 void
 ArchIrqInit(void)
 {
+	PIC8259AInit();
+
 	// Init LocalAPIC
 	ApicInit0();
 }

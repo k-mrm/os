@@ -10,3 +10,4 @@ obj-1 += trap.o
 obj-1 += trap-handler.o
 obj-1 += irq.o
 obj-1 += hpet.o cpu.o
+obj-1 += pic-8259a.o
